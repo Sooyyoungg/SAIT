@@ -15,27 +15,29 @@ class DataSplit(nn.Module):
         scale_transform = ScaleIntensity(minv=-1.0, maxv=1.0)
         self.transform = transforms.Compose([normal_transform, scale_transform, transforms.ToTensor()])
 
-        sems = []
-        depths = []
+        tot_sem = []
+        tot_depth = []
 
         for i in range(len(self.data_list)):
             sem = imageio.imread(data_root+'/SEM/'+self.data_list.iloc[i, 0])
             sem = np.asarray(sem)   # (66, 45)
             sub = self.data_list.iloc[i, 0].split('_itr')[0]
             depth = np.asarray(imageio.imread(data_root+'/Depth/'+sub+'.png'))   # (66, 45)
-            sems.append(sem)
-            depths.append(depth)
+            tot_sem.append(sem)
+            tot_depth.append(depth)
 
         # Train: (40000, 66, 45) / Valid: (8000, 66, 45)
-        self.sems = np.array(sems)
-        self.depths = np.array(depths)
+        self.tot_sem = np.array(tot_sem)
+        self.tot_depth = np.array(tot_depth)
+        # (66, 45) (66, 45)
+        # print(self.tot_sem[0].shape, self.tot_depth[0].shape)
 
     def __len__(self):
         return len(self.data_list)
 
     def __getitem__(self, item):
-        sem = self.sems[item]
-        depth = self.depths[item]
+        sem = self.tot_sem[item]
+        depth = self.tot_depth[item]
 
         # transform
         if self.do_transform is not None:
