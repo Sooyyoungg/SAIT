@@ -3,21 +3,23 @@ import torch
 from torch import nn
 import networks
 
-class Pix2Pix(nn.Module):
+from base_model import BaseModel
+
+class Pix2Pix(BaseModel):
     def __init__(self, config):
-        super(Pix2Pix, self).__init__()
+        BaseModel.__init__()
         self.config = config
-        self.device = torch.device('cuda:' + str(self.config.gpu[0]) if torch.cuda.is_available() else 'cpu')
+        self.device = torch.device('cuda:' + str(self.config.gpu_ids[0]) if torch.cuda.is_available() else 'cpu')
 
         self.loss_names = ['G_GAN', 'G_l1', 'D_real', 'D_fake']
         self.visual_names = ['input', 'fake_output', 'real_output']
 
         self.netG = networks.define_G(self.config.input_nc, self.config.output_nc, self.config.ngf, self.config.netG, self.config.norm,
-                                      not self.config.no_dropout, self.config.init_type, self.config.init_gain, self.device)
+                                      not self.config.no_dropout, self.config.init_type, self.config.init_gain, self.config.gpu_ids)
         self.netD = networks.define_D(self.config.input_nc + self.config.output_nc, self.config.ndf, self.config.netD,
-                                          self.config.n_layers_D, self.config.norm, self.config.init_type, self.config.init_gain, self.device)
+                                          self.config.n_layers_D, self.config.norm, self.config.init_type, self.config.init_gain, self.config.gpu_ids)
 
-        self.criterion_GAN = networks.GANLoss().to(self.device)
+        self.criterion_GAN = networks.GANLoss(config.gan_mode).to(self.device)
         self.criterion_L1 = torch.nn.L1Loss()
 
         self.optimizer_G = torch.optim.Adam(self.netG.parameters(), lr=self.config.lr, betas=(self.config.beta1, 0.999))

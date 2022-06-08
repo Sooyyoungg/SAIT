@@ -8,15 +8,21 @@ class Config:
     test_root = '../SAIT_Data/Test/'
 
     ## basic parameters
+    gpu_ids = [0]
     n_epoch = 100
     batch_size = 32
-    lr = 0.00005
-    gpu_ids = [0]
+    lr = 0.0002
+    lr_policy = 'linear'
+    lr_decay_iters = 50
+    beta1 = 0.5
+    pool_size = 50
     image_display_iter = 100
+    gan_mode = 'lsgan'
 
     input_nc = 1
     output_nc = 1
     ngf = 16
+    ndf = 16
     netG = 'unet_256'
     netD = 'basic'
     n_layers_D = 3

@@ -18,11 +18,11 @@ valid_data = DataSplit(data_list=config.val_list, data_root=config.valid_root)
 
 data_loader_train = torch.utils.data.DataLoader(train_data, batch_size=config.batch_size, shuffle=True, num_workers=16, pin_memory=False)
 data_loader_valid = torch.utils.data.DataLoader(valid_data, batch_size=config.batch_size, shuffle=True, num_workers=16, pin_memory=False)
-print(len(data_loader_train), "*", config.batch_size, "=", len(train_list))
+print(len(data_loader_train), "x", config.batch_size, "=", len(train_list))
 
 ## Start Training
 model = Pix2Pix(config)
 
 for epoch in range(config.n_epoch):
     for i, data in enumerate(data_loader_train):
-        model.train()
+        model.train(data)
