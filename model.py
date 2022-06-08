@@ -6,6 +6,7 @@ import networks
 class Pix2Pix(nn.Module):
     def __init__(self, config):
         super(Pix2Pix, self).__init__()
+
         self.config = config
         self.device = torch.device('cuda:' + str(self.config.gpu_ids[0]) if torch.cuda.is_available() else 'cpu')
 
@@ -24,38 +25,42 @@ class Pix2Pix(nn.Module):
         self.optimizer_D = torch.optim.Adam(self.netD.parameters(), lr=self.config.lr, betas=(self.config.beta1, 0.999))
         self.G_scheduler = networks.get_scheduler(self.optimizer_G, config)
         self.D_scheduler = networks.get_scheduler(self.optimizer_D, config)
+        print("setting over")
 
+    ## functions
     def train(self, data):
         sem = data['sem']
-        depth = data['depth']
+        real_depth = data['depth']
 
-        # forward - Generator
-        fake_dep = self.netG(sem)
-        print(sem.shape, fake_dep.shape)
+        ### forward ###
+        # Generator
+        fake_depth = self.netG(sem)
+        print(sem.shape, fake_depth.shape)
 
-        # forward - Discriminator - fake
-        # D_fake_in = np.concatenate((fake_dep, sem), axis=1)
-        D_fake_in = fake_dep
+        # Discriminator - fake
+        # D_fake_in = np.concatenate((fake_depth, sem), axis=1)
+        D_fake_in = fake_depth
         D_fake_out = self.netD(D_fake_in)
 
-        # forward - Discriminator - real
-        # D_real_in = np.concatenate((depth, sem), axis=1)
-        D_real_in = depth
+        # Discriminator - real
+        # D_real_in = np.concatenate((real_depth, sem), axis=1)
+        D_real_in = real_depth
         D_real_out = self.netD(D_real_in)
 
+        ### backward ###
         # Loss - G
         self.optimizer_G.zero_grad()
         G_loss_GAN = self.criterion_GAN(D_fake_out, True)
-        G_loss_L1 = self.criterion_L1(fake_dwi, real_dwi)
+        G_loss_L1 = self.criterion_L1(fake_depth, real_depth)
         G_loss = G_loss_GAN + G_loss_L1
         G_loss.backward()
         self.optimizer_G.step()
 
         # Loss - D
         self.optimizer_D.zero_grad()
-        D_loss_real = self.criterion_GAN(D_real_out, True)
         D_loss_fake = self.criterion_GAN(D_fake_out, False)
-        D_loss = D_loss_real + D_loss_fake
+        D_loss_real = self.criterion_GAN(D_real_out, True)
+        D_loss = D_loss_fake + D_loss_real
         D_loss.backward()
         self.optimizer_D.step()
 

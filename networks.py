@@ -102,19 +102,16 @@ def define_D(input_nc, ndf, netD, n_layers_D=3, norm='batch', init_type='normal'
     return init_net(net, init_type, init_gain, gpu_ids)
 
 class UnetGenerator(nn.Module):
-    def __init__(self, input_nc, output_nc, num_downs, ngf=16, norm_layer=nn.BatchNorm2d, use_dropout=False):
+    def __init__(self, input_nc, output_nc, num_downs, ngf=64, norm_layer=nn.BatchNorm2d, use_dropout=False):
         super(UnetGenerator, self).__init__()
 
         # construct unet structure
-        unet_block = UnetSkipConnectionBlock(ngf * 16, ngf * 16, input_nc=None, submodule=None, norm_layer=norm_layer, innermost=True)  # add the innermost layer
-        for i in range(num_downs - 6):  # add intermediate layers with ngf * 8 filters
-            unet_block = UnetSkipConnectionBlock(ngf * 16, ngf * 16, input_nc=None, submodule=unet_block, norm_layer=norm_layer, use_dropout=use_dropout)
-        # gradually reduce the number of filters from ngf * 8 to ngf
-        unet_block = UnetSkipConnectionBlock(ngf * 8, ngf * 16, input_nc=None, submodule=unet_block, norm_layer=norm_layer) # 512 -> 256
-        unet_block = UnetSkipConnectionBlock(ngf * 4, ngf * 8, input_nc=None, submodule=unet_block, norm_layer=norm_layer) # 512 -> 256
-        unet_block = UnetSkipConnectionBlock(ngf * 2, ngf * 4, input_nc=None, submodule=unet_block, norm_layer=norm_layer) # 256 -> 128
-        unet_block = UnetSkipConnectionBlock(ngf, ngf * 2, input_nc=None, submodule=unet_block, norm_layer=norm_layer)     # 128 -> 64
-        self.model = UnetSkipConnectionBlock(output_nc, ngf, input_nc=input_nc, submodule=unet_block, outermost=True, norm_layer=norm_layer)  # add the outermost layer
+        unet_block = UnetSkipConnectionBlock(ngf * 8, ngf * 8, input_nc=None, submodule=None, norm_layer=norm_layer, innermost=True)  # add the innermost layer
+        unet_block = UnetSkipConnectionBlock(ngf * 8, ngf * 8, input_nc=None, submodule=unet_block, norm_layer=norm_layer, use_dropout=use_dropout)
+        unet_block = UnetSkipConnectionBlock(ngf * 4, ngf * 8, input_nc=None, submodule=unet_block, norm_layer=norm_layer) # 256 -> 512
+        unet_block = UnetSkipConnectionBlock(ngf * 2, ngf * 4, input_nc=None, submodule=unet_block, norm_layer=norm_layer) # 128 -> 256
+        unet_block = UnetSkipConnectionBlock(ngf, ngf * 2, input_nc=None, submodule=unet_block, norm_layer=norm_layer)     # 64 -> 128
+        self.model = UnetSkipConnectionBlock(output_nc, ngf, input_nc=input_nc, submodule=unet_block, outermost=True, norm_layer=norm_layer)  # 1 -> 64
 
     def forward(self, input):
         return self.model(input)
@@ -144,8 +141,9 @@ class UnetSkipConnectionBlock(nn.Module):
         # : skip connection을 하기 때문에 동일한 level에서의 encoder의 결과 + 같은 크기의 decoder output (둘의 output size 동일)
         # innermost에서는 encoder의 가장 마지막 layer의 output을 그대로 사용하기 때문에 2배일 필요 X
         if outermost:
+            conv = nn.Conv2d(input_nc, inner_nc, kernel_size=3, stride=1, padding=1, bias=use_bias)
             upconv = nn.ConvTranspose2d(inner_nc * 2, outer_nc, kernel_size=4, stride=2, padding=1) # image size x 2
-            down = [downconv]
+            down = [conv]
             up = [uprelu, upconv, nn.Tanh()]
             model = down + [submodule] + up
         elif innermost:
@@ -166,6 +164,7 @@ class UnetSkipConnectionBlock(nn.Module):
 
     def forward(self, x):
         # 마지막 layer의 output은 지전해준 channel의 개수에 맞춰야 하므로 skip connection 적용하지 X
+        print(x.shape)
         if self.outermost:
             return self.model(x)
         else:

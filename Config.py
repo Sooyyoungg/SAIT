@@ -8,7 +8,7 @@ class Config:
     test_root = '../SAIT_Data/Test/'
 
     ## basic parameters
-    gpu_ids = [0]
+    gpu_ids = []
     n_epoch = 100
     n_iter = 100
     n_iter_decay = 100
@@ -23,7 +23,7 @@ class Config:
 
     input_nc = 1
     output_nc = 1
-    ngf = 16
+    ngf = 64
     ndf = 16
     netG = 'unet_256'
     netD = 'basic'
