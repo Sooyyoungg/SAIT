@@ -25,7 +25,6 @@ class Pix2Pix(nn.Module):
         self.optimizer_D = torch.optim.Adam(self.netD.parameters(), lr=self.config.lr, betas=(self.config.beta1, 0.999))
         self.G_scheduler = networks.get_scheduler(self.optimizer_G, config)
         self.D_scheduler = networks.get_scheduler(self.optimizer_D, config)
-        print("setting over")
 
     ## functions
     def train(self, data):
