@@ -36,13 +36,11 @@ class Pix2Pix(nn.Module):
         fake_depth = self.netG(sem) # Tensor (32, 1, 66, 45)
 
         # Discriminator - fake
-        D_fake_in = torch.cat((fake_depth, sem), axis=1)
-        # D_fake_in = fake_depth
-        D_fake_out = self.netD(D_fake_in)   # torch.Size([32, 1, 6, 3])
+        D_fake_in = torch.cat((fake_depth, sem), dim=1)
+        D_fake_out = self.netD(D_fake_in.detach())   # torch.Size([32, 1, 6, 3])
 
         # Discriminator - real
-        D_real_in = torch.cat((real_depth, sem), axis=1)
-        # D_real_in = real_depth
+        D_real_in = torch.cat((real_depth, sem), dim=1)
         D_real_out = self.netD(D_real_in)
 
         ### backward ###
@@ -59,7 +57,7 @@ class Pix2Pix(nn.Module):
         D_loss_fake = self.criterion_GAN(D_fake_out, False)
         D_loss_real = self.criterion_GAN(D_real_out, True)
         D_loss = D_loss_fake + D_loss_real
-        D_loss.backward()
+        D_loss.backward(retain_graph=True)
         self.optimizer_D.step()
 
         train_dict = {}
