@@ -2,13 +2,32 @@ import functools
 import torch
 import torch.nn as nn
 from torch.nn import init
+from torch.optim import lr_scheduler
 
 ###############################################################################
 # Helper Functions
 ###############################################################################
-class Identity(nn.Module):
-    def forward(self, x):
-        return x
+def get_scheduler(optimizer, config):
+    if config.lr_policy == 'lambda':
+        def lambda_rule(epoch):
+            lr_l = 1.0 - max(0, epoch + config.n_epoch - config.n_iter) / float(config.n_iter_decay + 1)
+            return lr_l
+
+        scheduler = lr_scheduler.LambdaLR(optimizer, lr_lambda=lambda_rule)
+    elif config.lr_policy == 'step':
+        scheduler = lr_scheduler.StepLR(optimizer, step_size=config.lr_decay_iters, gamma=0.1)
+    elif config.lr_policy == 'plateau':
+        scheduler = lr_scheduler.ReduceLROnPlateau(optimizer, mode='min', factor=0.2, threshold=0.01, patience=5)
+    elif config.lr_policy == 'cosine':
+        scheduler = lr_scheduler.CosineAnnealingLR(optimizer, T_max=config.n_iter, eta_min=0)
+    else:
+        return NotImplementedError('learning rate policy [%s] is not implemented', config.lr_policy)
+    return scheduler
+
+def update_learning_rate(scheduler, optimizer):
+    scheduler.step()
+    lr = optimizer.param_groups[0]['lr']
+    print('learning rate = %.7f' % lr)
 
 def get_norm_layer(norm_type='instance'):
     if norm_type == 'batch':
@@ -16,7 +35,7 @@ def get_norm_layer(norm_type='instance'):
     elif norm_type == 'instance':
         norm_layer = functools.partial(nn.InstanceNorm2d, affine=False, track_running_stats=False)
     elif norm_type == 'none':
-        def norm_layer(x): return Identity()
+        norm_layer = None
     else:
         raise NotImplementedError('normalization layer [%s] is not found' % norm_type)
     return norm_layer
@@ -51,7 +70,7 @@ def init_weights(net, init_type='normal', init_gain=0.02):
 def init_net(net, init_type='normal', init_gain=0.02, gpu_ids=[]):
     if torch.cuda.is_available():
         if len(gpu_ids) > 0:
-            assert(torch.cuda.is_available())
+            # assert(torch.cuda.is_available())
             net.to(gpu_ids[0])
             net = torch.nn.DataParallel(net, gpu_ids)
     else:

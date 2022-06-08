@@ -10,6 +10,8 @@ class Config:
     ## basic parameters
     gpu_ids = [0]
     n_epoch = 100
+    n_iter = 100
+    n_iter_decay = 100
     batch_size = 32
     lr = 0.0002
     lr_policy = 'linear'

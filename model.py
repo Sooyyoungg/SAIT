@@ -3,16 +3,14 @@ import torch
 from torch import nn
 import networks
 
-from base_model import BaseModel
-
-class Pix2Pix(BaseModel):
+class Pix2Pix(nn.Module):
     def __init__(self, config):
-        BaseModel.__init__()
+        super(Pix2Pix, self).__init__()
         self.config = config
         self.device = torch.device('cuda:' + str(self.config.gpu_ids[0]) if torch.cuda.is_available() else 'cpu')
 
-        self.loss_names = ['G_GAN', 'G_l1', 'D_real', 'D_fake']
-        self.visual_names = ['input', 'fake_output', 'real_output']
+        # self.loss_names = ['G_GAN', 'G_l1', 'D_real', 'D_fake']
+        # self.visual_names = ['input', 'fake_output', 'real_output']
 
         self.netG = networks.define_G(self.config.input_nc, self.config.output_nc, self.config.ngf, self.config.netG, self.config.norm,
                                       not self.config.no_dropout, self.config.init_type, self.config.init_gain, self.config.gpu_ids)
@@ -24,8 +22,8 @@ class Pix2Pix(BaseModel):
 
         self.optimizer_G = torch.optim.Adam(self.netG.parameters(), lr=self.config.lr, betas=(self.config.beta1, 0.999))
         self.optimizer_D = torch.optim.Adam(self.netD.parameters(), lr=self.config.lr, betas=(self.config.beta1, 0.999))
-        self.optimizers.append(self.optimizer_G)
-        self.optimizers.append(self.optimizer_D)
+        self.G_scheduler = networks.get_scheduler(self.optimizer_G, config)
+        self.D_scheduler = networks.get_scheduler(self.optimizer_D, config)
 
     def train(self, data):
         sem = data['sem']
@@ -64,8 +62,8 @@ class Pix2Pix(BaseModel):
         train_dict = {}
         train_dict['G_loss'] = G_loss
         train_dict['D_loss'] = D_loss
-        train_dict['dwi'] = real_dwi
-        train_dict['pred'] = fake_dwi
+        train_dict['fake_depth'] = fake_depth
+        train_dict['real_depth'] = real_depth
 
         return train_dict
 
