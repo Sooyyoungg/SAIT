@@ -33,17 +33,16 @@ class Pix2Pix(nn.Module):
 
         ### forward ###
         # Generator
-        fake_depth = self.netG(sem)
-        print(sem.shape, fake_depth.shape)
+        fake_depth = self.netG(sem) # Tensor (32, 1, 66, 45)
 
         # Discriminator - fake
-        # D_fake_in = np.concatenate((fake_depth, sem), axis=1)
-        D_fake_in = fake_depth
-        D_fake_out = self.netD(D_fake_in)
+        D_fake_in = torch.cat((fake_depth, sem), axis=1)
+        # D_fake_in = fake_depth
+        D_fake_out = self.netD(D_fake_in)   # torch.Size([32, 1, 6, 3])
 
         # Discriminator - real
-        # D_real_in = np.concatenate((real_depth, sem), axis=1)
-        D_real_in = real_depth
+        D_real_in = torch.cat((real_depth, sem), axis=1)
+        # D_real_in = real_depth
         D_real_out = self.netD(D_real_in)
 
         ### backward ###

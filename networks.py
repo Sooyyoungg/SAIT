@@ -143,14 +143,14 @@ class UnetSkipConnectionBlock(nn.Module):
         # innermost에서는 encoder의 가장 마지막 layer의 output을 그대로 사용하기 때문에 2배일 필요 X
         if outermost:
             conv = nn.Conv2d(input_nc, inner_nc, kernel_size=3, stride=1, padding=1, bias=use_bias)
-            upconv = nn.ConvTranspose2d(inner_nc * 2, outer_nc, kernel_size=4, stride=2, padding=1) # image size x 2
+            upconv = nn.ConvTranspose2d(inner_nc * 2, outer_nc, kernel_size=3, stride=1, padding=1) # image size x 2
             down = [conv]
             up = [uprelu, upconv, nn.Tanh()]
             model = down + [submodule] + up
         elif innermost:
             # upconv = nn.ConvTranspose2d(inner_nc, outer_nc, kernel_size=4, stride=2, padding=1, bias=use_bias)
             downconv = nn.Conv2d(input_nc, inner_nc, kernel_size=5, stride=1, padding=1, bias=use_dropout)
-            upconv = nn.ConvTranspose2d(inner_nc * 2, outer_nc, kernel_size=5, stride=1, padding=1, bias=use_dropout)
+            upconv = nn.ConvTranspose2d(inner_nc, outer_nc, kernel_size=5, stride=1, padding=1, bias=use_dropout)
             down = [downrelu, downconv]
             up = [uprelu, upconv, upnorm]
             model = down + up
@@ -172,13 +172,10 @@ class UnetSkipConnectionBlock(nn.Module):
 
     def forward(self, x):
         # 마지막 layer의 output은 지전해준 channel의 개수에 맞춰야 하므로 skip connection 적용하지 X
-        print(x.shape)
         if self.outermost:
             return self.model(x)
         else:
-            out = self.model(x)
-            print(out.shape)
-            return torch.cat([x, out], 1)
+            return torch.cat([x, self.model(x)], 1)
 
 ## Discriminator
 # Defines a PatchGAN discriminator

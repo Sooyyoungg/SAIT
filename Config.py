@@ -24,7 +24,7 @@ class Config:
     input_nc = 1
     output_nc = 1
     ngf = 64
-    ndf = 16
+    ndf = 64
     netG = 'unet_256'
     netD = 'basic'
     n_layers_D = 3
