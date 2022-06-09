@@ -18,12 +18,12 @@ print(len(train_file_list))
 print(train_file_list[0])
 
 val_file_list = []
-for f in train_files:
+for f in val_files:
     file = f.split('/')[-1].split('\\')[-1]
     val_file_list.append(file)
 
 test_file_list = []
-for f in train_files:
+for f in test_files:
     file = f.split('/')[-1].split('\\')[-1]
     test_file_list.append(file)
 

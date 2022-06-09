@@ -16,9 +16,9 @@ def main():
     train_list = pd.read_csv(config.train_list)
 
     # train_data = DataSplit(data_list=config.train_list, data_root=config.train_root)
-    valid_data = DataSplit(data_list=config.val_list, data_root=config.valid_root)
+    valid_data = DataSplit(data_list=config.valid_list, data_root=config.valid_root)
 
-    # data_loader_train = torch.utils.data.DataLoader(train_data, batch_size=config.batch_size, shuffle=True, num_workers=8, pin_memory=False)
+    # data_loader_train = torch.utils.data.DataLoader(train_data, batch_size=config.batch_size, shuffle=True, num_workers=16, pin_memory=False)
     data_loader_train = torch.utils.data.DataLoader(valid_data, batch_size=config.batch_size, shuffle=True, num_workers=16, pin_memory=False)
     print(len(data_loader_train), "x", config.batch_size,"(batch size) =", len(train_list))
 
@@ -27,7 +27,7 @@ def main():
     model.to(device)
 
     print("Start Training!!")
-    itr_per_epoch = len(data_loader_train) / config.batch_size
+    itr_per_epoch = len(data_loader_train)
     tot_itr = 0
     for epoch in range(config.n_epoch):
         for i, data in enumerate(data_loader_train):
