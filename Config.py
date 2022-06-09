@@ -1,14 +1,14 @@
 class Config:
     ## dataset parameters
-    train_list = '../SAIT_Data/train_list.csv'
-    val_list = '../SAIT_Data/valid_list.csv'
-    test_list = '../SAIT_Data/test_list.csv'
-    train_root = '../SAIT_Data/Train/'
-    valid_root = '../SAIT_Data/Validation/'
-    test_root = '../SAIT_Data/Test/'
+    train_list = 'Dataset/train_list.csv'
+    val_list = 'Dataset/valid_list.csv'
+    test_list = 'Dataset/test_list.csv'
+    train_root = 'Dataset/Train/'
+    valid_root = 'Dataset/Validation/'
+    test_root = 'Dataset/Test/'
 
     ## basic parameters
-    gpu_ids = []
+    gpu_ids = [0]
     n_epoch = 100
     n_iter = 100
     n_iter_decay = 100

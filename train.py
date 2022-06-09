@@ -3,7 +3,7 @@ import pandas as pd
 # import tensorboardX
 
 from Config import Config
-from Data.DataSplit import DataSplit
+from DataSplit import DataSplit
 from model import Pix2Pix
 import networks
 

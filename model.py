@@ -57,7 +57,7 @@ class Pix2Pix(nn.Module):
         D_loss_fake = self.criterion_GAN(D_fake_out, False)
         D_loss_real = self.criterion_GAN(D_real_out, True)
         D_loss = D_loss_fake + D_loss_real
-        D_loss.backward(retain_graph=True)
+        D_loss.backward()
         self.optimizer_D.step()
 
         train_dict = {}
