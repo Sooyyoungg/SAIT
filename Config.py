@@ -1,7 +1,7 @@
 class Config:
     ## dataset parameters
     train_list = 'Dataset/train_list.csv'
-    val_list = 'Dataset/valid_list.csv'
+    val_list = 'Dataset/val_list.csv'
     test_list = 'Dataset/test_list.csv'
     train_root = 'Dataset/Train/'
     valid_root = 'Dataset/Validation/'
