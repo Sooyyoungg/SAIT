@@ -1,6 +1,8 @@
+import random
 import torch
 import pandas as pd
-# import tensorboardX
+import tensorboardX
+from torchvision.utils import save_image
 
 from Config import Config
 from DataSplit import DataSplit
@@ -26,6 +28,8 @@ def main():
     model = Pix2Pix(config)
     model.to(device)
 
+    train_writer = tensorboardX.SummaryWriter(config.log_dir)
+
     print("Start Training!!")
     itr_per_epoch = len(data_loader_train)
     tot_itr = 0
@@ -34,14 +38,30 @@ def main():
             tot_itr += i
             train_dict = model.train(data)
 
-            # image 저장 및 RMSE 계산
             fake_depth = train_dict['fake_depth']
             real_depth = train_dict['real_depth']
-            
+
+            if i % 20 == 0:
+                print("image save")
+                r = random.randint(0, config.batch_size-1)
+                # image 저장 및 RMSE 계산
+                f_image = fake_depth[r]
+                r_image = real_depth[r]
+                # print(fake_depth, torch.min(fake_depth), torch.max(fake_depth)) -> [-1, 1]
+                save_image(f_image, '{}/{}_{}_fake_depth.png'.format(config.img_dir, epoch+1, i+1))
+                save_image(r_image, '{}/{}_{}_real_depth.png'.format(config.img_dir, epoch+1, i+1))
+
             # RMSE
+            mse = 0
+            for b in range(config.batch_size):
+                diff = fake_depth[b] - real_depth[b]
+                mse += torch.pow(diff, 2)
+            rmse = torch.sqrt(mse / config.batch_size)
 
-
-            print("Epoch[%d/%d] | itr[%d/%d] | tot_itrs: %d | Loss_G: %.9f | Loss_D: %.9f"%(epoch+1, config.n_epoch, i+1, itr_per_epoch, tot_itr, train_dict['G_loss'], train_dict['D_loss']))
+            # save & print loss values
+            train_writer.add_scalar('Loss_G', train_dict['G_loss'])
+            train_writer.add_scalar('Loss_D', train_dict['D_loss'])
+            print("Epoch: %d/%d | itr: %d/%d | tot_itrs: %d | Loss_G: %.9f | Loss_D: %.9f | RMSE: %.9f"%(epoch+1, config.n_epoch, i+1, itr_per_epoch, tot_itr, train_dict['G_loss'], train_dict['D_loss'], rmse))
 
         valid_G_loss = 0
         valid_D_loss = 0

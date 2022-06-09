@@ -7,12 +7,15 @@ class Config:
     valid_root = 'Dataset/Validation/'
     test_root = 'Dataset/Test/'
 
+    log_dir = 'log/basic_P2P'
+    img_dir = 'Generated_images'
+
     ## basic parameters
     gpu_ids = [7]
     n_epoch = 100
     n_iter = 100
     n_iter_decay = 100
-    batch_size = 32
+    batch_size = 64
     lr = 0.0002
     lr_policy = 'step'
     lr_decay_iters = 50
