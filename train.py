@@ -41,7 +41,7 @@ def main():
             # RMSE
 
 
-            print("Epoch[%d/%d] | itr[%d/%d] | tot_itrs: %d | Loss_G: %.9f | Loss_D: %.9f".format(epoch, config.n_epoch, i, itr_per_epoch, tot_itr, train_dict['G_loss'], train_dict['D_loss']))
+            print("Epoch[%d/%d] | itr[%d/%d] | tot_itrs: %d | Loss_G: %.9f | Loss_D: %.9f"%(epoch+1, config.n_epoch, i+1, itr_per_epoch, tot_itr, train_dict['G_loss'], train_dict['D_loss']))
 
         valid_G_loss = 0
         valid_D_loss = 0

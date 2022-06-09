@@ -14,7 +14,7 @@ class Config:
     n_iter_decay = 100
     batch_size = 32
     lr = 0.0002
-    lr_policy = 'linear'
+    lr_policy = 'step'
     lr_decay_iters = 50
     beta1 = 0.5
     pool_size = 50
