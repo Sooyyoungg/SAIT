@@ -15,11 +15,11 @@ def main():
     ## Data Loader
     train_list = pd.read_csv(config.train_list)
 
-    train_data = DataSplit(data_list=config.train_list, data_root=config.train_root)
-    # valid_data = DataSplit(data_list=config.val_list, data_root=config.valid_root)
+    # train_data = DataSplit(data_list=config.train_list, data_root=config.train_root)
+    valid_data = DataSplit(data_list=config.val_list, data_root=config.valid_root)
 
-    data_loader_train = torch.utils.data.DataLoader(train_data, batch_size=config.batch_size, shuffle=True, num_workers=8, pin_memory=False)
-    # data_loader_valid = torch.utils.data.DataLoader(valid_data, batch_size=config.batch_size, shuffle=True, num_workers=8, pin_memory=False)
+    # data_loader_train = torch.utils.data.DataLoader(train_data, batch_size=config.batch_size, shuffle=True, num_workers=8, pin_memory=False)
+    data_loader_train = torch.utils.data.DataLoader(valid_data, batch_size=config.batch_size, shuffle=True, num_workers=16, pin_memory=False)
     print(len(data_loader_train), "x", config.batch_size,"(batch size) =", len(train_list))
 
     ## Start Training
@@ -34,8 +34,12 @@ def main():
             tot_itr += i
             train_dict = model.train(data)
 
+            # image 저장 및 RMSE 계산
             fake_depth = train_dict['fake_depth']
             real_depth = train_dict['real_depth']
+            
+            # RMSE
+
 
             print("Epoch[%d/%d] | itr[%d/%d] | tot_itrs: %d | Loss_G: %.9f | Loss_D: %.9f".format(epoch, config.n_epoch, i, itr_per_epoch, tot_itr, train_dict['G_loss'], train_dict['D_loss']))
 

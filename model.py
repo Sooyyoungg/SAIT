@@ -36,8 +36,8 @@ class Pix2Pix(nn.Module):
         fake_depth = self.netG(sem) # Tensor (32, 1, 66, 45)
 
         # Discriminator - fake
-        D_fake_in = torch.cat((fake_depth, sem), dim=1)
-        D_fake_out = self.netD(D_fake_in.detach())   # torch.Size([32, 1, 6, 3])
+        D_fake_in = torch.cat((fake_depth.detach().cpu(), sem), dim=1)
+        D_fake_out = self.netD(D_fake_in)   # torch.Size([32, 1, 6, 3])
 
         # Discriminator - real
         D_real_in = torch.cat((real_depth, sem), dim=1)

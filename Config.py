@@ -8,7 +8,7 @@ class Config:
     test_root = 'Dataset/Test/'
 
     ## basic parameters
-    gpu_ids = [0]
+    gpu_ids = [7]
     n_epoch = 100
     n_iter = 100
     n_iter_decay = 100
