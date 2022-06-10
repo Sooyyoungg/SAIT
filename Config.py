@@ -9,6 +9,7 @@ class Config:
 
     log_dir = 'log/basic_P2P'
     img_dir = 'Generated_images'
+    test_img_dir = 'Tested_images'
 
     ## basic parameters
     gpu_ids = [7]
