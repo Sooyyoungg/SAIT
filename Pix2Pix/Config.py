@@ -1,15 +1,16 @@
 class Config:
     ## dataset parameters
-    train_list = 'Dataset/train_list.csv'
-    valid_list = 'Dataset/val_list.csv'
-    test_list = 'Dataset/test_list.csv'
-    train_root = 'Dataset/Train/'
-    valid_root = 'Dataset/Validation/'
-    test_root = 'Dataset/Test/'
+    train_list = '../Dataset/train_list.csv'
+    valid_list = '../Dataset/val_list.csv'
+    test_list = '../Dataset/test_list.csv'
+    train_root = '../Dataset/Train/'
+    valid_root = '../Dataset/Validation/'
+    test_root = '../Dataset/Test/'
 
-    log_dir = 'log/basic_P2P'
-    img_dir = 'Generated_images'
-    test_img_dir = 'Tested_images'
+    # output directory
+    log_dir = './log'
+    img_dir = './Generated_images'
+    test_img_dir = './Tested_images'
 
     ## basic parameters
     gpu_ids = [7]

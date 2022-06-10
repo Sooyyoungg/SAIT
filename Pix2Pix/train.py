@@ -57,7 +57,6 @@ def main():
             # RMSE
             rmse = 0
             for b in range(config.batch_size):
-                print(fake_depth[b, 0, :, :].shape)
                 rmse += mean_squared_error(fake_depth[b, 0, :, :].detach().cpu(), real_depth[b, 0, :, :].detach().cpu()) ** 0.5
             avg_rmse = rmse / config.batch_size
 
@@ -65,7 +64,7 @@ def main():
             train_writer.add_scalar('Loss_G', train_dict['G_loss'], tot_itr)
             train_writer.add_scalar('Loss_D', train_dict['D_loss'], tot_itr)
             train_writer.add_scalar('Avg_RMSE', train_dict['D_loss'], avg_rmse)
-            print("Epoch: %d/%d | itr: %d/%d | tot_itrs: %d | Loss_G: %.9f | Loss_D: %.9f | Avg RMSE: %.9f"%(epoch+1, config.n_epoch, i+1, itr_per_epoch, tot_itr, train_dict['G_loss'], train_dict['D_loss'], avg_rmse))
+            print("Epoch: %d/%d | itr: %d/%d | tot_itrs: %d | Loss_G: %.5f | Loss_D: %.5f | Avg RMSE: %.5f"%(epoch+1, config.n_epoch, i+1, itr_per_epoch, tot_itr, train_dict['G_loss'], train_dict['D_loss'], avg_rmse))
 
         valid_G_loss = 0
         valid_D_loss = 0
@@ -78,18 +77,17 @@ def main():
             # mse
             v_fake_depth = val_dict['fake_depth']
             v_real_depth = val_dict['real_depth']
-            print(v_fake_depth[0, 0, :, :].shape)
-            valid_mse += mean_squared_error(v_fake_depth[0, 0, :, :].detach().cpu(), v_real_depth[b, 0, :, :].detach().cpu()) ** 0.5
+            valid_mse += mean_squared_error(v_fake_depth[0, 0, :, :].detach().cpu(), v_real_depth[0, 0, :, :].detach().cpu()) ** 0.5
         v_G_avg_loss = float(valid_G_loss / (v+1))
         v_D_avg_loss = float(valid_D_loss / (v+1))
         valid_rmse = valid_mse / len(data_loader_valid)
-        print("===> Validation <=== Epoch[%d/%d] | Loss_G: %.9f | Loss_D: %.9f | Avg RMSE: %.9f".format(epoch, config.n_epoch, v_G_avg_loss, v_D_avg_loss, valid_rmse))
+        print("===> Validation <=== Epoch: %d/%d | Loss_G: %.5f | Loss_D: %.5f | Avg RMSE: %.5f"%(epoch+1, config.n_epoch, v_G_avg_loss, v_D_avg_loss, valid_rmse))
 
         networks.update_learning_rate(model.G_scheduler, model.optimizer_G)
         networks.update_learning_rate(model.D_scheduler, model.optimizer_D)
 
         if epoch % 10 == 0:
-            torch.save(model.state_dict(), config.log_dir+'/{}_{}_.pt'.format(epoch, tot_itr))
+            torch.save(model.state_dict(), config.log_dir+'/{}_{}_.pt'.format(epoch+1, tot_itr))
             with open(config.log_dir+'/latest_log.txt', 'w') as f:
                 f.writelines('%d, %d'%(epoch, tot_itr))
 

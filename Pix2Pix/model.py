@@ -1,4 +1,3 @@
-import numpy as np
 import torch
 from torch import nn
 import networks
@@ -16,7 +15,7 @@ class Pix2Pix(nn.Module):
         self.netG = networks.define_G(self.config.input_nc, self.config.output_nc, self.config.ngf, self.config.netG, self.config.norm,
                                       not self.config.no_dropout, self.config.init_type, self.config.init_gain, self.config.gpu_ids)
         self.netD = networks.define_D(self.config.input_nc + self.config.output_nc, self.config.ndf, self.config.netD,
-                                          self.config.n_layers_D, self.config.norm, self.config.init_type, self.config.init_gain, self.config.gpu_ids)
+                                      self.config.n_layers_D, self.config.norm, self.config.init_type, self.config.init_gain, self.config.gpu_ids)
 
         self.criterion_GAN = networks.GANLoss(config.gan_mode).to(self.device)
         self.criterion_L1 = torch.nn.L1Loss()
@@ -69,7 +68,6 @@ class Pix2Pix(nn.Module):
         return train_dict
 
     def val(self, data):
-        print("Validation Start!")
         with torch.no_grad():
             sem = data['sem'].to(self.device)
             real_depth = data['depth'].to(self.device)

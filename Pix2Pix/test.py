@@ -1,7 +1,6 @@
-import random
 import torch
 import pandas as pd
-import tensorboardX
+import numpy as np
 from torchvision.utils import save_image
 
 from Config import Config
@@ -16,15 +15,16 @@ def main():
 
     ## Data Loader
     test_list = pd.read_csv(config.test_list)
-
     test_data = DataSplit(data_list=config.test_list, data_root=config.test_root)
-
     data_loader_test = torch.utils.data.DataLoader(test_data, batch_size=1, shuffle=True, num_workers=16, pin_memory=False)
     print("Test: ", len(data_loader_test), "x", config.batch_size,"(batch size) =", len(test_list))
 
+    # get latest model -> best model로 수정 필요
+    np.loadtxt(config.log_dir+'/latest_log.txt')
+    print()
     ## Start Training
     model = Pix2Pix(config)
-    model.load_state_dict(torch.load(config.log_dir))
+    model.load_state_dict(torch.load(config.log_dir+''))
     model.to(device)
     model.eval()
 
@@ -44,13 +44,12 @@ def main():
             save_image(real_depth, '{}/{}_{}_real_depth.png'.format(config.test_img_dir, epoch+1, i+1))
 
             # RMSE 계산
-            diff = fake_depth - real_depth
-            mse += torch.pow(diff, 2)
+
 
             # print loss values
             print("Loss_G: %.9f | Loss_D: %.9f"%(test_dict['G_loss'], test_dict['D_loss']))
 
-        rmse = torch.sqrt(mse / len(data_loader_test))
+        avg_rmse =
         print("==> Testing <== Avg Loss_G: %.9f | Avg Loss_D: %.9f | RMSE: %.9f"%(test_dict['G_loss'], test_dict['D_loss'], rmse))
 
 
