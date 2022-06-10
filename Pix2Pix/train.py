@@ -2,7 +2,7 @@ import random
 import torch
 import pandas as pd
 import tensorboardX
-from torchvision.utils import save_image
+import cv2
 from sklearn.metrics import mean_squared_error
 
 from Config import Config
@@ -48,11 +48,10 @@ def main():
                 print("image save")
                 r = random.randint(0, config.batch_size-1)
                 # image 저장 및 RMSE 계산
-                f_image = fake_depth[r]
-                r_image = real_depth[r]
-                # print(fake_depth, torch.min(fake_depth), torch.max(fake_depth)) -> [-1, 1]
-                save_image(f_image, '{}/{}_{}_fake_depth.png'.format(config.img_dir, epoch+1, i+1))
-                save_image(r_image, '{}/{}_{}_real_depth.png'.format(config.img_dir, epoch+1, i+1))
+                f_image = fake_depth[r, 0, :, :].detach().cpu().numpy()
+                r_image = real_depth[r, 0, :, :].detach().cpu().numpy()
+                cv2.imwrite('{}/{}_{}_fake_depth.png'.format(config.img_dir, epoch+1, i+1), f_image)
+                cv2.imwrite('{}/{}_{}_real_depth.png'.format(config.img_dir, epoch+1, i+1), r_image)
 
             # RMSE
             rmse = 0
@@ -63,7 +62,7 @@ def main():
             # save & print loss values
             train_writer.add_scalar('Loss_G', train_dict['G_loss'], tot_itr)
             train_writer.add_scalar('Loss_D', train_dict['D_loss'], tot_itr)
-            train_writer.add_scalar('Avg_RMSE', train_dict['D_loss'], avg_rmse)
+            train_writer.add_scalar('Avg_RMSE', avg_rmse, tot_itr)
             print("Epoch: %d/%d | itr: %d/%d | tot_itrs: %d | Loss_G: %.5f | Loss_D: %.5f | Avg RMSE: %.5f"%(epoch+1, config.n_epoch, i+1, itr_per_epoch, tot_itr, train_dict['G_loss'], train_dict['D_loss'], avg_rmse))
 
         valid_G_loss = 0
@@ -89,7 +88,7 @@ def main():
         if epoch % 10 == 0:
             torch.save(model.state_dict(), config.log_dir+'/{}_{}_.pt'.format(epoch+1, tot_itr))
             with open(config.log_dir+'/latest_log.txt', 'w') as f:
-                f.writelines('%d, %d'%(epoch, tot_itr))
+                f.writelines('%d, %d'%(epoch+1, tot_itr))
 
 if __name__ == '__main__':
     main()

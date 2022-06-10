@@ -2,9 +2,10 @@ import torch
 import pandas as pd
 import numpy as np
 from torchvision.utils import save_image
+from sklearn.metrics import mean_squared_error
 
 from Config import Config
-from DataSplit import DataSplit
+from DataSplit_test import DataSplit
 from model import Pix2Pix
 import networks
 
@@ -20,38 +21,28 @@ def main():
     print("Test: ", len(data_loader_test), "x", config.batch_size,"(batch size) =", len(test_list))
 
     # get latest model -> best model로 수정 필요
-    np.loadtxt(config.log_dir+'/latest_log.txt')
-    print()
+    latest_epoch = np.loadtxt(config.log_dir+'/latest_log.txt', dtype="int", delimiter=",")[-2]
+    latest_itrs = np.loadtxt(config.log_dir+'/latest_log.txt', dtype="int", delimiter=",")[-1]
+
     ## Start Training
     model = Pix2Pix(config)
-    model.load_state_dict(torch.load(config.log_dir+''))
+    model.load_state_dict(torch.load(config.log_dir+'/{}_{}_.pt'.format(latest_epoch, latest_itrs)))
     model.to(device)
-    model.eval()
 
     print("Start Testing!!")
     tot_itr = 0
-    mse = 0
     with torch.no_grad():
         for i, data in enumerate(data_loader_test):
             tot_itr += i
             test_dict = model.test(data)
 
             fake_depth = test_dict['fake_depth']
-            real_depth = test_dict['real_depth']
+            sub = test_dict['sub'][0]
+            print(sub)
 
             # image 저장
-            save_image(fake_depth, '{}/{}_{}_fake_depth.png'.format(config.test_img_dir,))
-            save_image(real_depth, '{}/{}_{}_real_depth.png'.format(config.test_img_dir, epoch+1, i+1))
-
-            # RMSE 계산
-
-
-            # print loss values
-            print("Loss_G: %.9f | Loss_D: %.9f"%(test_dict['G_loss'], test_dict['D_loss']))
-
-        avg_rmse =
-        print("==> Testing <== Avg Loss_G: %.9f | Avg Loss_D: %.9f | RMSE: %.9f"%(test_dict['G_loss'], test_dict['D_loss'], rmse))
-
+            print(i, "th image save")
+            save_image(fake_depth, '{}/{}'.format(config.test_img_dir,sub))
 
 if __name__ == '__main__':
     main()

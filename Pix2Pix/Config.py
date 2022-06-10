@@ -13,7 +13,7 @@ class Config:
     test_img_dir = './Tested_images'
 
     ## basic parameters
-    gpu_ids = [7]
+    gpu_ids = [5]
     n_epoch = 100
     n_iter = 100
     n_iter_decay = 100
