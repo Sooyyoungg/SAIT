@@ -2,7 +2,7 @@ import random
 import torch
 import pandas as pd
 import tensorboardX
-from torchvision.utils import save_image
+import cv2
 from sklearn.metrics import mean_squared_error
 
 from Config import Config
@@ -48,11 +48,10 @@ def main():
                 print("image save")
                 r = random.randint(0, config.batch_size-1)
                 # image 저장 및 RMSE 계산
-                f_image = fake_depth[r]
-                r_image = real_depth[r]
-                # print(fake_depth, torch.min(fake_depth), torch.max(fake_depth)) -> [-1, 1]
-                save_image(f_image, '{}/{}_{}_fake_depth.png'.format(config.img_dir, epoch+1, i+1))
-                save_image(r_image, '{}/{}_{}_real_depth.png'.format(config.img_dir, epoch+1, i+1))
+                f_image = fake_depth[r, 0, :, :].detach().cpu().numpy()
+                r_image = real_depth[r, 0, :, :].detach().cpu().numpy()
+                cv2.imwrite('{}/{}_{}_fake_depth.png'.format(config.img_dir, epoch+1, i+1), f_image)
+                cv2.imwrite('{}/{}_{}_real_depth.png'.format(config.img_dir, epoch+1, i+1), r_image)
 
             # RMSE
             rmse = 0
