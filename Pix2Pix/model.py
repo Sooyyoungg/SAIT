@@ -106,13 +106,10 @@ class Pix2Pix(nn.Module):
     def test(self, data):
         with torch.no_grad():
             sem = data['sem'].to(self.device)
-            real_depth = data['depth'].to(self.device)
-
+            sub = data['sub']
             # Generator
             fake_depth = self.netG(sem)  # Tensor (32, 1, 66, 45)
-
             test_dict = {}
             test_dict['fake_depth'] = fake_depth
-            test_dict['real_depth'] = real_depth
-
+            test_dict['sub'] = sub
         return test_dict

@@ -63,7 +63,7 @@ def main():
             # save & print loss values
             train_writer.add_scalar('Loss_G', train_dict['G_loss'], tot_itr)
             train_writer.add_scalar('Loss_D', train_dict['D_loss'], tot_itr)
-            train_writer.add_scalar('Avg_RMSE', train_dict['D_loss'], avg_rmse)
+            train_writer.add_scalar('Avg_RMSE', avg_rmse, tot_itr)
             print("Epoch: %d/%d | itr: %d/%d | tot_itrs: %d | Loss_G: %.5f | Loss_D: %.5f | Avg RMSE: %.5f"%(epoch+1, config.n_epoch, i+1, itr_per_epoch, tot_itr, train_dict['G_loss'], train_dict['D_loss'], avg_rmse))
 
         valid_G_loss = 0
@@ -89,7 +89,7 @@ def main():
         if epoch % 10 == 0:
             torch.save(model.state_dict(), config.log_dir+'/{}_{}_.pt'.format(epoch+1, tot_itr))
             with open(config.log_dir+'/latest_log.txt', 'w') as f:
-                f.writelines('%d, %d'%(epoch, tot_itr))
+                f.writelines('%d, %d'%(epoch+1, tot_itr))
 
 if __name__ == '__main__':
     main()
