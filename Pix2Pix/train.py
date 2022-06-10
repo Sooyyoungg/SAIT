@@ -1,9 +1,12 @@
 import random
 import torch
+import numpy as np
 import pandas as pd
 import tensorboardX
 import cv2
 from sklearn.metrics import mean_squared_error
+from monai.transforms import ScaleIntensity
+from torchvision import transforms
 
 from Config import Config
 from DataSplit import DataSplit
@@ -32,6 +35,10 @@ def main():
     model.to(device)
 
     train_writer = tensorboardX.SummaryWriter(config.log_dir)
+    # train_writer.add_graph(model, )
+
+    # scale_transform = ScaleIntensity(minv=0.0, maxv=255.0)
+    # transform = transforms.Compose([scale_transform])
 
     print("Start Training!!")
     itr_per_epoch = len(data_loader_train)
@@ -47,11 +54,17 @@ def main():
             if i % 20 == 0:
                 print("image save")
                 r = random.randint(0, config.batch_size-1)
-                # image 저장 및 RMSE 계산
+                # image rescaling & save
                 f_image = fake_depth[r, 0, :, :].detach().cpu().numpy()
                 r_image = real_depth[r, 0, :, :].detach().cpu().numpy()
+                # post-processing
+                f_image = ((f_image + 1) / 2) * 255.0
+                r_image = ((r_image + 1) / 2) * 255.0
+                # save
                 cv2.imwrite('{}/{}_{}_fake_depth.png'.format(config.img_dir, epoch+1, i+1), f_image)
                 cv2.imwrite('{}/{}_{}_real_depth.png'.format(config.img_dir, epoch+1, i+1), r_image)
+                train_writer.add_image('Fake_depth', f_image, tot_itr, dataformats='NHWC')
+                train_writer.add_image('Real_depth', r_image, tot_itr, dataformats='NHWC')
 
             # RMSE
             rmse = 0
