@@ -5,8 +5,6 @@ import pandas as pd
 import tensorboardX
 import cv2
 from sklearn.metrics import mean_squared_error
-from monai.transforms import ScaleIntensity
-from torchvision import transforms
 
 from Config import Config
 from DataSplit import DataSplit
@@ -37,8 +35,6 @@ def main():
     train_writer = tensorboardX.SummaryWriter(config.log_dir)
     # train_writer.add_graph(model, )
 
-    # scale_transform = ScaleIntensity(minv=0.0, maxv=255.0)
-    # transform = transforms.Compose([scale_transform])
 
     print("Start Training!!")
     itr_per_epoch = len(data_loader_train)
@@ -63,8 +59,8 @@ def main():
                 # save
                 cv2.imwrite('{}/{}_{}_fake_depth.png'.format(config.img_dir, epoch+1, i+1), f_image)
                 cv2.imwrite('{}/{}_{}_real_depth.png'.format(config.img_dir, epoch+1, i+1), r_image)
-                train_writer.add_image('Fake_depth', f_image, tot_itr, dataformats='NHWC')
-                train_writer.add_image('Real_depth', r_image, tot_itr, dataformats='NHWC')
+                # train_writer.add_image('Fake_depth', f_image, tot_itr, dataformats='NHWC')
+                # train_writer.add_image('Real_depth', r_image, tot_itr, dataformats='NHWC')
 
             # RMSE
             rmse = 0

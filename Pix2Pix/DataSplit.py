@@ -2,8 +2,6 @@ import torch.nn as nn
 import pandas as pd
 import numpy as np
 import imageio
-import torch
-# from monai.transforms import ScaleIntensity, NormalizeIntensity
 from torchvision import transforms
 
 class DataSplit(nn.Module):
@@ -12,9 +10,6 @@ class DataSplit(nn.Module):
 
         self.data_list = pd.read_csv(data_list)
         self.do_transform = do_transform
-        # normal_transform = NormalizeIntensity(subtrahend=0.5, divisor=0.5, nonzero=False)
-        # scale_transform = ScaleIntensity(minv=-1.0, maxv=1.0)
-        # self.transform = transforms.Compose([normal_transform, scale_transform, transforms.ToTensor()])
         self.transform = transforms.Compose([transforms.ToTensor(), transforms.Normalize(mean=0.5, std=0.5)])
 
         tot_sem = []
