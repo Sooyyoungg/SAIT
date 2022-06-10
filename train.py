@@ -57,6 +57,7 @@ def main():
             # RMSE
             rmse = 0
             for b in range(config.batch_size):
+                print(fake_depth[b, 0, :, :].shape)
                 rmse += mean_squared_error(fake_depth[b, 0, :, :].detach().cpu(), real_depth[b, 0, :, :].detach().cpu()) ** 0.5
             avg_rmse = rmse / config.batch_size
 
@@ -77,7 +78,7 @@ def main():
             # mse
             v_fake_depth = val_dict['fake_depth']
             v_real_depth = val_dict['real_depth']
-            print(v_fake_depth.shape)
+            print(v_fake_depth[0, 0, :, :].shape)
             valid_mse += mean_squared_error(v_fake_depth[0, 0, :, :].detach().cpu(), v_real_depth[b, 0, :, :].detach().cpu()) ** 0.5
         v_G_avg_loss = float(valid_G_loss / (v+1))
         v_D_avg_loss = float(valid_D_loss / (v+1))

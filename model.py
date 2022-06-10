@@ -71,44 +71,50 @@ class Pix2Pix(nn.Module):
     def val(self, data):
         print("Validation Start!")
         with torch.no_grad():
-            t1 = data['t1']
-            b0 = data['b0']
-            real_dwi = data['dwi']
+            sem = data['sem'].to(self.device)
+            real_depth = data['depth'].to(self.device)
 
+            ### forward ###
             # Generator
-            input_img = np.concatenate((t1, b0), axis=1)
-            fake_dwi = self.netG(input_img, data['grad'])
+            fake_depth = self.netG(sem)  # Tensor (32, 1, 66, 45)
 
+            # Discriminator - fake
+            D_fake_in = torch.cat((fake_depth, sem), dim=1)
+            D_fake_out = self.netD(D_fake_in.detach())  # torch.Size([32, 1, 6, 3])
+
+            # Discriminator - real
+            D_real_in = torch.cat((real_depth, sem), dim=1)
+            D_real_out = self.netD(D_real_in.detach())
+
+            ### Loss ###
             # Loss - G
             G_loss_GAN = self.criterion_GAN(D_fake_out, True)
-            G_loss_L1 = self.criterion_L1(fake_dwi, real_dwi)
+            G_loss_L1 = self.criterion_L1(fake_depth, real_depth)
             G_loss = G_loss_GAN + G_loss_L1
+
+            # Loss - D
+            D_loss_fake = self.criterion_GAN(D_fake_out, False)
+            D_loss_real = self.criterion_GAN(D_real_out, True)
+            D_loss = D_loss_fake + D_loss_real
 
             val_dict = {}
             val_dict['G_loss'] = G_loss
-            val_dict['dwi'] = real_dwi
-            val_dict['pred'] = fake_dwi
+            val_dict['D_loss'] = D_loss
+            val_dict['fake_depth'] = fake_depth
+            val_dict['real_depth'] = real_depth
 
         return val_dict
 
     def test(self, data):
         with torch.no_grad():
-            t1 = data['t1']
-            b0 = data['b0']
-            real_dwi = data['dwi']
+            sem = data['sem'].to(self.device)
+            real_depth = data['depth'].to(self.device)
 
             # Generator
-            input_img = np.concatenate((t1, b0), axis=1)
-            fake_dwi = self.netG(input_img, data['grad'])
-
-            # Loss - G
-            G_loss_GAN = self.criterion_GAN(D_fake_out, True)
-            G_loss_L1 = self.criterion_L1(fake_dwi, real_dwi)
-            G_loss = G_loss_GAN + G_loss_L1
+            fake_depth = self.netG(sem)  # Tensor (32, 1, 66, 45)
 
             test_dict = {}
-            test_dict['G_loss'] = G_loss
-            test_dict['dwi'] = real_dwi
-            test_dict['pred'] = fake_dwi
+            test_dict['fake_depth'] = fake_depth
+            test_dict['real_depth'] = real_depth
 
         return test_dict
