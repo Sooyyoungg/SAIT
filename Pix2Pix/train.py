@@ -42,7 +42,7 @@ def main():
     for epoch in range(config.n_epoch):
         for i, data in enumerate(data_loader_train):
             tot_itr += i
-            train_dict = model.train(data)
+            train_dict = model.train(i, data)
 
             fake_depth = train_dict['fake_depth']
             real_depth = train_dict['real_depth']

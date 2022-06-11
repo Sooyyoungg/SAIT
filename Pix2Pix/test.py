@@ -18,7 +18,7 @@ def main():
     test_list = pd.read_csv(config.test_list)
     test_data = DataSplit(data_list=config.test_list, data_root=config.test_root)
     data_loader_test = torch.utils.data.DataLoader(test_data, batch_size=1, shuffle=True, num_workers=16, pin_memory=False)
-    print("Test: ", len(data_loader_test), "x", config.batch_size,"(batch size) =", len(test_list))
+    print("Test: ", len(data_loader_test), "x", 1,"(batch size) =", len(test_list))
 
     # get latest model -> best model로 수정 필요
     latest_epoch = np.loadtxt(config.log_dir+'/latest_log.txt', dtype="int", delimiter=",")[-2]
