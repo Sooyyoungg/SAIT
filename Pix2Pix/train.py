@@ -1,5 +1,6 @@
 import random
 import torch
+import numpy as np
 import pandas as pd
 import tensorboardX
 import cv2
@@ -32,6 +33,8 @@ def main():
     model.to(device)
 
     train_writer = tensorboardX.SummaryWriter(config.log_dir)
+    # train_writer.add_graph(model, )
+
 
     print("Start Training!!")
     itr_per_epoch = len(data_loader_train)
@@ -39,7 +42,7 @@ def main():
     for epoch in range(config.n_epoch):
         for i, data in enumerate(data_loader_train):
             tot_itr += i
-            train_dict = model.train(data)
+            train_dict = model.train(i, data)
 
             fake_depth = train_dict['fake_depth']
             real_depth = train_dict['real_depth']
@@ -47,11 +50,17 @@ def main():
             if i % 20 == 0:
                 print("image save")
                 r = random.randint(0, config.batch_size-1)
-                # image 저장 및 RMSE 계산
+                # image rescaling & save
                 f_image = fake_depth[r, 0, :, :].detach().cpu().numpy()
                 r_image = real_depth[r, 0, :, :].detach().cpu().numpy()
+                # post-processing
+                f_image = ((f_image + 1) / 2) * 255.0
+                r_image = ((r_image + 1) / 2) * 255.0
+                # save
                 cv2.imwrite('{}/{}_{}_fake_depth.png'.format(config.img_dir, epoch+1, i+1), f_image)
                 cv2.imwrite('{}/{}_{}_real_depth.png'.format(config.img_dir, epoch+1, i+1), r_image)
+                # train_writer.add_image('Fake_depth', f_image, tot_itr, dataformats='NHWC')
+                # train_writer.add_image('Real_depth', r_image, tot_itr, dataformats='NHWC')
 
             # RMSE
             rmse = 0

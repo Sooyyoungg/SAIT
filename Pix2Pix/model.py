@@ -26,7 +26,7 @@ class Pix2Pix(nn.Module):
         self.D_scheduler = networks.get_scheduler(self.optimizer_D, config)
 
     ## functions
-    def train(self, data):
+    def train(self, idx, data):
         sem = data['sem'].to(self.device)
         real_depth = data['depth'].to(self.device)
 
@@ -44,12 +44,13 @@ class Pix2Pix(nn.Module):
 
         ### backward ###
         # Loss - G
-        self.optimizer_G.zero_grad()
-        G_loss_GAN = self.criterion_GAN(D_fake_out, True)
-        G_loss_L1 = self.criterion_L1(fake_depth, real_depth)
-        G_loss = G_loss_GAN + G_loss_L1
-        G_loss.backward(retain_graph=True)
-        self.optimizer_G.step()
+        if idx % 5 == 0:
+            self.optimizer_G.zero_grad()
+            G_loss_GAN = self.criterion_GAN(D_fake_out, True)
+            G_loss_L1 = self.criterion_L1(fake_depth, real_depth)
+            G_loss = G_loss_GAN + G_loss_L1
+            G_loss.backward(retain_graph=True)
+            self.optimizer_G.step()
 
         # Loss - D
         self.optimizer_D.zero_grad()
