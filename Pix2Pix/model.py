@@ -25,6 +25,8 @@ class Pix2Pix(nn.Module):
         self.G_scheduler = networks.get_scheduler(self.optimizer_G, config)
         self.D_scheduler = networks.get_scheduler(self.optimizer_D, config)
 
+        self.G_loss = 0
+
     ## functions
     def train(self, idx, data):
         sem = data['sem'].to(self.device)
@@ -48,20 +50,20 @@ class Pix2Pix(nn.Module):
             self.optimizer_G.zero_grad()
             G_loss_GAN = self.criterion_GAN(D_fake_out, True)
             G_loss_L1 = self.criterion_L1(fake_depth, real_depth)
-            G_loss = G_loss_GAN + G_loss_L1
-            G_loss.backward(retain_graph=True)
+            self.G_loss = G_loss_GAN + G_loss_L1
+            self.G_loss.backward(retain_graph=True)
             self.optimizer_G.step()
 
         # Loss - D
         self.optimizer_D.zero_grad()
-        D_loss_fake = self.criterion_GAN(D_fake_out, False)
-        D_loss_real = self.criterion_GAN(D_real_out, True)
+        D_loss_fake = self.criterion_GAN(D_fake_out, False) + networks.cal_gradient_penalty(self.netD, real_depth, fake_depth, self.device, type='mixed', constant=1.0, lambda_gp=10.0)
+        D_loss_real = self.criterion_GAN(D_real_out, True) + networks.cal_gradient_penalty(self.netD, real_depth, fake_depth, self.device, type='mixed', constant=1.0, lambda_gp=10.0)
         D_loss = D_loss_fake + D_loss_real
         D_loss.backward()
         self.optimizer_D.step()
 
         train_dict = {}
-        train_dict['G_loss'] = G_loss
+        train_dict['G_loss'] = self.G_loss
         train_dict['D_loss'] = D_loss
         train_dict['fake_depth'] = fake_depth
         train_dict['real_depth'] = real_depth

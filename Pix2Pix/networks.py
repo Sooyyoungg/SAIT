@@ -236,7 +236,7 @@ class GANLoss(nn.Module):
             self.loss = nn.MSELoss()
         elif gan_mode == 'vanilla':
             self.loss = nn.BCEWithLogitsLoss()
-        elif gan_mode in ['wgangp']:
+        elif gan_mode == 'wgangp':
             self.loss = None
         else:
             raise NotImplementedError('gan mode %s not implemented' % gan_mode)

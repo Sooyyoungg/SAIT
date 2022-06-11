@@ -2,12 +2,11 @@ import torch
 import pandas as pd
 import numpy as np
 from torchvision.utils import save_image
-from sklearn.metrics import mean_squared_error
 
 from Config import Config
 from DataSplit_test import DataSplit
 from model import Pix2Pix
-import networks
+
 
 def main():
     config = Config()

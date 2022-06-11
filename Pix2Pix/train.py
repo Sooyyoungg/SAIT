@@ -1,6 +1,5 @@
 import random
 import torch
-import numpy as np
 import pandas as pd
 import tensorboardX
 import cv2
@@ -39,6 +38,8 @@ def main():
     print("Start Training!!")
     itr_per_epoch = len(data_loader_train)
     tot_itr = 0
+    min_v_rmse = 100
+    min_v_loss_G = 100
     for epoch in range(config.n_epoch):
         for i, data in enumerate(data_loader_train):
             tot_itr += i
@@ -57,8 +58,8 @@ def main():
                 f_image = ((f_image + 1) / 2) * 255.0
                 r_image = ((r_image + 1) / 2) * 255.0
                 # save
-                cv2.imwrite('{}/{}_{}_fake_depth.png'.format(config.img_dir, epoch+1, i+1), f_image)
-                cv2.imwrite('{}/{}_{}_real_depth.png'.format(config.img_dir, epoch+1, i+1), r_image)
+                cv2.imwrite('{}/Train/{}_{}_fake_depth.png'.format(config.img_dir, epoch+1, i+1), f_image)
+                cv2.imwrite('{}/Train/{}_{}_real_depth.png'.format(config.img_dir, epoch+1, i+1), r_image)
                 # train_writer.add_image('Fake_depth', f_image, tot_itr, dataformats='NHWC')
                 # train_writer.add_image('Real_depth', r_image, tot_itr, dataformats='NHWC')
 
@@ -78,14 +79,28 @@ def main():
         valid_D_loss = 0
         valid_mse = 0
         v = 0
+        r = random.randint(0, config.batch_size - 1)
         for v, v_data in enumerate(data_loader_valid):
             val_dict = model.val(v_data)
             valid_G_loss += val_dict['G_loss']
             valid_D_loss += val_dict['D_loss']
-            # mse
             v_fake_depth = val_dict['fake_depth']
             v_real_depth = val_dict['real_depth']
+
+            # save image
+            if v == r:
+                v_f_image = v_fake_depth[0, 0, :, :].detach().cpu().numpy()
+                v_r_image = v_real_depth[0, 0, :, :].detach().cpu().numpy()
+                # post-processing
+                v_f_image = ((v_f_image + 1) / 2) * 255.0
+                v_r_image = ((v_r_image + 1) / 2) * 255.0
+                # save
+                cv2.imwrite('{}/Validation/{}_fake_depth.png'.format(config.img_dir, epoch + 1), v_f_image)
+                cv2.imwrite('{}/Validation/{}_real_depth.png'.format(config.img_dir, epoch + 1), v_r_image)
+
+            # mse
             valid_mse += mean_squared_error(v_fake_depth[0, 0, :, :].detach().cpu(), v_real_depth[0, 0, :, :].detach().cpu()) ** 0.5
+
         v_G_avg_loss = float(valid_G_loss / (v+1))
         v_D_avg_loss = float(valid_D_loss / (v+1))
         valid_rmse = valid_mse / len(data_loader_valid)
@@ -94,10 +109,17 @@ def main():
         networks.update_learning_rate(model.G_scheduler, model.optimizer_G)
         networks.update_learning_rate(model.D_scheduler, model.optimizer_D)
 
-        if epoch % 10 == 0:
-            torch.save(model.state_dict(), config.log_dir+'/{}_{}_.pt'.format(epoch+1, tot_itr))
+        # save model for each 10 epochs
+        if epoch % 10 == 0 or epoch == config.n_epoch - 1:
+            torch.save(model.state_dict(), config.log_dir+'/{}_epoch{}_itr{}.pt'.format(config.data_name, epoch+1, tot_itr))
             with open(config.log_dir+'/latest_log.txt', 'w') as f:
                 f.writelines('%d, %d'%(epoch+1, tot_itr))
+
+        # save best performance model
+        if valid_rmse < min_v_rmse and v_G_avg_loss < min_v_loss_G:
+            min_v_rmse = valid_rmse
+            min_v_loss_G = v_G_avg_loss
+            torch.save(model.state_dict(), config.log_dir+'/{}_best_epoch{}_itr{}_.pt'.format(config.data_name, epoch+1, tot_itr)) # SEM_best_epoch80_itr123124.pt
 
 if __name__ == '__main__':
     main()
