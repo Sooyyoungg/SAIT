@@ -1,10 +1,14 @@
 import torch
 from torch import nn
-# import sys
-# sys.path.append("..")
-
-# import Pix2Pix.networks as networks
-import networks
+import os
+import sys
+sys.path.append(os.path.dirname(os.path.abspath(os.path.dirname(__file__))))
+from Transfer_Config import Transfer_Config
+config = Transfer_Config()
+if config.model_transfer:
+    import Pix2Pix.networks as networks
+else:
+    import networks
 
 class Pix2Pix(nn.Module):
     def __init__(self, config):
@@ -54,17 +58,15 @@ class Pix2Pix(nn.Module):
         # Loss - G
         if idx % 5 == 0:
             self.optimizer_G.zero_grad()
-            G_loss_GAN = self.criterion_GAN(D_fake_out, True)
-            G_loss_L1 = self.criterion_L1(fake_depth, real_depth)
-            self.G_loss = G_loss_GAN + self.config.lambda_L1 * G_loss_L1
+            self.G_loss_GAN = self.criterion_GAN(D_fake_out, True)
+            self.G_loss_L1 = self.criterion_L1(fake_depth, real_depth)
+            self.G_loss = self.G_loss_GAN + self.config.lambda_L1 * self.G_loss_L1
             self.G_loss.backward(retain_graph=True)
             self.optimizer_G.step()
 
         # Loss - D
         self.optimizer_D.zero_grad()
-        # D_loss_fake = self.criterion_GAN(D_fake_out, False) + networks.cal_gradient_penalty(self.netD, real_depth, fake_depth, self.device, type='mixed', constant=1.0, lambda_gp=10.0)
         D_loss_fake = self.criterion_GAN(D_fake_out, False)
-        # D_loss_real = self.criterion_GAN(D_real_out, True) + networks.cal_gradient_penalty(self.netD, real_depth, fake_depth, self.device, type='mixed', constant=1.0, lambda_gp=10.0)
         D_loss_real = self.criterion_GAN(D_real_out, True)
         D_loss = (D_loss_fake + D_loss_real) * 0.5
         D_loss.backward()

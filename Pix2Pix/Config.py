@@ -3,7 +3,6 @@ class Config:
     data_name = 'SEM'
     train_list = '/scratch/connectome/conmaster/Pycharm_projects/SAIT/Dataset/train_list.csv'
     valid_list = '/scratch/connectome/conmaster/Pycharm_projects/SAIT/Dataset/val_list.csv'
-    valid_half_list = '/scratch/connectome/conmaster/Pycharm_projects/SAIT/Dataset/val_half_list.csv'
     test_list = '/scratch/connectome/conmaster/Pycharm_projects/SAIT/Dataset/test_list.csv'
     train_root = '/scratch/connectome/conmaster/Pycharm_projects/SAIT/Dataset/Train/'
     valid_root = '/scratch/connectome/conmaster/Pycharm_projects/SAIT/Dataset/Validation/'
@@ -15,7 +14,7 @@ class Config:
     test_img_dir = '/scratch/connectome/conmaster/Pycharm_projects/SAIT/Pix2Pix/Tested_images'
 
     ## basic parameters
-    gpu_ids = [5]
+    gpu_ids = [3]
     n_epoch = 100
     n_iter = 100
     n_iter_decay = 100
@@ -26,7 +25,7 @@ class Config:
     beta1 = 0.5
     pool_size = 50
     image_display_iter = 100
-    gan_mode = 'BCE'
+    gan_mode = 'vanilla'
     lambda_L1 = 100
 
     # model parameters

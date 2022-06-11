@@ -1,4 +1,4 @@
-class Config:
+class Transfer_Config:
     ## dataset parameters
     data_name = 'SEM'
     train_list = '/scratch/connectome/conmaster/Pycharm_projects/SAIT/Dataset/train_list.csv'
@@ -16,3 +16,4 @@ class Config:
     self_supervised_dir = '/scratch/connectome/conmaster/Pycharm_projects/SAIT/Self_log'
 
     gpu_ids = [3]
+    model_transfer = 1

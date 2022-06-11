@@ -11,7 +11,7 @@ def train(model,
           masker,
           earlystop=True,
           patience=10,
-          device="cuda:0",
+          device="cuda:3",
           verbose=True
           ):
     index = 0 #iteration number

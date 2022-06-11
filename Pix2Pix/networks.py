@@ -234,8 +234,6 @@ class GANLoss(nn.Module):
         self.gan_mode = gan_mode
         if gan_mode == 'lsgan':
             self.loss = nn.MSELoss()
-        elif gan_mode == 'BCE':
-            self.loss = nn.BCELoss()
         elif gan_mode == 'vanilla':
             self.loss = nn.BCEWithLogitsLoss()
         elif gan_mode == 'wgangp':
@@ -251,7 +249,7 @@ class GANLoss(nn.Module):
         return target_tensor.expand_as(prediction)
 
     def __call__(self, prediction, target_is_real):
-        if self.gan_mode in ['lsgan', 'BCE', 'vanilla']:
+        if self.gan_mode in ['lsgan', 'vanilla']:
             target_tensor = self.get_target_tensor(prediction, target_is_real)
             loss = self.loss(prediction, target_tensor)
         elif self.gan_mode == 'wgangp':

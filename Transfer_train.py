@@ -9,12 +9,14 @@ from Noise2Self.util import show, plot_images, plot_tensors, psnr
 from Noise2Self.metric import frc, match_intensity, quantify, plot_quantifications
 from Noise2Self.train import train
 import Pix2Pix.model
-from Config import Config
+from Transfer_Config import Transfer_Config
+from Pix2Pix.Config import Config
 from Pix2Pix.DataSplit import DataSplit
 from Noise2Self.mask import Masker
 from nc_loader import nc_loader
 
-config = Config()
+config = Transfer_Config()
+p2p_config = Config()
 device = torch.device('cuda:' + str(config.gpu_ids[0]) if torch.cuda.is_available() else 'cpu')
 
 print("Training Start")
@@ -43,7 +45,7 @@ for repeat in range(repeats):
     [noisy, clean] = nc_loader(data_list=config.train_list, data_root=config.train_root).forward()
 
     # model define
-    model = Pix2Pix.model.Pix2Pix(config)
+    model = Pix2Pix.model.Pix2Pix(p2p_config)
 
     # transfer learning
     model.load_state_dict(torch.load(config.log_dir+'/'+pretrained_name)) # model directory
