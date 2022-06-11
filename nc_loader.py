@@ -4,9 +4,9 @@ import numpy as np
 import imageio
 from torchvision import transforms
 
-class DataSplit(nn.Module):
+class nc_loader(nn.Module):
     def __init__(self, data_list, data_root, do_transform=True):
-        super(DataSplit, self).__init__()
+        super(nc_loader, self).__init__()
 
         self.data_list = pd.read_csv(data_list)
         self.do_transform = do_transform
@@ -26,19 +26,6 @@ class DataSplit(nn.Module):
         # Train: (40000, 66, 45) / Valid: (8000, 66, 45)
         self.tot_sem = np.array(tot_sem)
         self.tot_depth = np.array(tot_depth)
-        # (66, 45) (66, 45)
-        # print(self.tot_sem[0].shape, self.tot_depth[0].shape)
 
-    def __len__(self):
-        return len(self.data_list)
-
-    def __getitem__(self, item):
-        sem = self.tot_sem[item]
-        depth = self.tot_depth[item]
-
-        # transform
-        if self.do_transform:
-            sem = self.transform(sem)
-            depth = self.transform(depth)
-
-        return {"sem": sem, "depth": depth}
+    def forward(self):
+        return  [self.tot_sem, self.tot_depth]

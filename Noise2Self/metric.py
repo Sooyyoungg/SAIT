@@ -1,9 +1,9 @@
 import numpy as np
 from numpy import clip
-from util import normalize
+from .util import normalize
 import matplotlib
 import matplotlib.pyplot as plt
-from skimage.measure import compare_mse, compare_ssim
+from skimage.metrics import mean_squared_error, structural_similarity
 from statistics import mean, stdev
 
 myfloat = np.float32
@@ -107,7 +107,7 @@ def compare_avgFRC(img1, img2):
 
 def quantify(results, metrics, target, net_output):
     all_metrics = ["mse", "ssmi", "frc"]
-    switcher = {"mse": compare_mse, "ssmi": compare_ssim, "frc": compare_avgFRC}
+    switcher = {"mse": mean_squared_error, "ssmi": structural_similarity, "frc": compare_avgFRC}
     assert target.shape == net_output.shape and len(target.shape) == 2
 
     if metrics == "all":

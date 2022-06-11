@@ -68,24 +68,24 @@ class Masker:
 
             return acc_tensor
 
-    def pixel_grid_mask(shape, patch_size, phase_x, phase_y):
-        A = torch.zeros(shape[-2:])
-        for i in range(shape[-2]):
-            for j in range(shape[-1]):
-                if i % patch_size == phase_x and j % patch_size == phase_y:
-                    A[i, j] = 1
-        return torch.Tensor(A)
+def pixel_grid_mask(shape, patch_size, phase_x, phase_y):
+    A = torch.zeros(shape[-2:])
+    for i in range(shape[-2]):
+        for j in range(shape[-1]):
+            if i % patch_size == phase_x and j % patch_size == phase_y:
+                A[i, j] = 1
+    return torch.Tensor(A)
 
-    def interpolate_mask(tensor, mask, mask_inv):
-        device = tensor.device
+def interpolate_mask(tensor, mask, mask_inv):
+    device = tensor.device
 
-        mask = mask.to(device)
+    mask = mask.to(device)
 
-        kernel = np.array([[0.5, 1.0, 0.5], [1.0, 0.0, 1.0], (0.5, 1.0, 0.5)]) ## kernel model
-        kernel = kernel[np.newaxis, np.newaxis, :, :]
-        kernel = torch.Tensor(kernel).to(device)
-        kernel = kernel / kernel.sum()
+    kernel = np.array([[0.5, 1.0, 0.5], [1.0, 0.0, 1.0], (0.5, 1.0, 0.5)]) ## kernel model
+    kernel = kernel[np.newaxis, np.newaxis, :, :]
+    kernel = torch.Tensor(kernel).to(device)
+    kernel = kernel / kernel.sum()
 
-        filtered_tensor = torch.nn.functional.conv2d(tensor, kernel, stride=1, padding=1)
+    filtered_tensor = torch.nn.functional.conv2d(tensor, kernel, stride=1, padding=1)
 
-        return filtered_tensor * mask + tensor * mask_inv
+    return filtered_tensor * mask + tensor * mask_inv

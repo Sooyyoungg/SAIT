@@ -14,6 +14,7 @@ def main():
     config = Config()
     device = torch.device('cuda:{}'.format(config.gpu_ids[0])) if config.gpu_ids else torch.device('cpu')  # get device name: CPU or GPU
     print(device)
+    print("Data:", config.data_name)
 
     ## Data Loader
     train_list = pd.read_csv(config.train_list)
@@ -33,7 +34,6 @@ def main():
 
     train_writer = tensorboardX.SummaryWriter(config.log_dir)
     # train_writer.add_graph(model, )
-
 
     print("Start Training!!")
     itr_per_epoch = len(data_loader_train)
@@ -70,6 +70,8 @@ def main():
             avg_rmse = rmse / config.batch_size
 
             # save & print loss values
+            train_writer.add_scalar('Loss_G_GAN', train_dict['G_GAN_loss'], tot_itr)
+            train_writer.add_scalar('Loss_G_L1', train_dict['G_L1_loss'], tot_itr)
             train_writer.add_scalar('Loss_G', train_dict['G_loss'], tot_itr)
             train_writer.add_scalar('Loss_D', train_dict['D_loss'], tot_itr)
             train_writer.add_scalar('Avg_RMSE', avg_rmse, tot_itr)

@@ -1,9 +1,22 @@
 import pandas as pd
 import numpy as np
 import imageio
+import glob
 
-# ll = np.asarray(imageio.imread('../SAIT_Data/Train/Depth/20201001_202940_NE142400C_RAE01_1_S01_M0005-01MS_3.png'))
-# print(ll.tolist())
+# make data list
+val_file_dir = './Dataset/Validation/SEM/*'
+val_files = sorted(glob.glob(val_file_dir))
 
-for i in range(10):
-    print(i)
+val_file_list = []
+count = 0
+for f in val_files:
+    count += 1
+    file = f.split('/')[-1].split('\\')[-1]
+    val_file_list.append(file)
+    if count == 50:
+        break;
+
+val_file_list = pd.DataFrame(val_file_list)
+
+val_file_list.to_csv('Dataset/val_half_list.csv', index=False)
+

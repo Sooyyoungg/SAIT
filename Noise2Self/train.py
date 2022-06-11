@@ -27,12 +27,14 @@ def train(model,
 
     for n in range(epoch):
 
-        for i, (noisy, clean) in enumerate(dataloader):
+        for i, data in enumerate(dataloader):
+            noisy = data['sem'].to(device)
+            clean = data['depth'].to(device)
             # train
             model.train()
             noisy, clean = (
-                noisy.type(torch.cuda.FloatTensor).to(device),
-                clean.type(torch.cuda.FloatTensor).to(device),
+                noisy.type(torch.cuda.FloatTensor),
+                clean.type(torch.cuda.FloatTensor),
             )
 
             net_input, mask = masker.mask(noisy, index % (masker.n_masks - 1))
@@ -58,6 +60,7 @@ def train(model,
                 net_output = model(net_input)
 
                 val_loss = loss_fn(net_output * mask, noisy * mask) * masker.n_masks
+                print(val_loss.item())
 
                 # find best validation loss
                 if val_loss.item() < best_val_loss:

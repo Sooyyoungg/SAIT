@@ -1,41 +1,33 @@
-import os
-import sys
-
-import Pix2Pix.model
-
-sys.path.append("..")
-
-import torch
-import math
-import json
-import matplotlib.pyplot as plt
-import os.path
-import datetime
-import numpy as np
-
-from util import show, plot_images, plot_tensors, psnr
-from data_loader import tiff_loader, load_confocal
-
-from util import getbestgpu
-from models.unet import Unet
-from metric import frc, match_intensity, quantify, plot_quantifications
-from train import train
+# import os
+# import sys
 from torch.optim import Adam
+# sys.path.append("")
+import torch
+import matplotlib.pyplot as plt
 
-device = torch.device('cuda:' + str(self.config.gpu_ids[0]) if torch.cuda.is_available() else 'cpu')
+from Noise2Self.util import show, plot_images, plot_tensors, psnr
+from Noise2Self.metric import frc, match_intensity, quantify, plot_quantifications
+from Noise2Self.train import train
+import Pix2Pix.model
+from Config import Config
+from Pix2Pix.DataSplit import DataSplit
+from Noise2Self.mask import Masker
+from nc_loader import nc_loader
+
+config = Config()
+device = torch.device('cuda:' + str(config.gpu_ids[0]) if torch.cuda.is_available() else 'cpu')
 
 print("Training Start")
+batch_size = 16
 n_epoch = 100 ## epoch 값
 repeats = 10
 learning_rate = 0.0001
-pretrained_name = 'fmd_epoch50.pt'
+pretrained_name = '100_19500000.pt'
 loss = 'mse' # [mse, mae]
-key_s = 10
-Data_eval[key_s] = {}
+Data_eval = {}
 metrics_key = ['mse', 'ssmi', 'frc']
 
 ## Prepare for self-supervision training
-from mask import Masker
 masker = Masker(width =4, mode='interpolate')
 
 ## if repeats
@@ -44,17 +36,18 @@ for repeat in range(repeats):
     print("No. {}".format(repeat))
 
     # data loader
-    train_data = DataSplit(data_list=config.train_list, data_root=config.train_root)
-    data_loader = torch.utils.data.DataLoader(train_data, batch_size=config.batch_size, shuffle=True,
+    train_data = DataSplit(data_list=config.valid_half_list, data_root=config.valid_root)
+    data_loader = torch.utils.data.DataLoader(train_data, batch_size=batch_size, shuffle=True,
                                                     num_workers=16, pin_memory=False)
-    noisy = data_loader['sem']
-    clean = data_loader['depth']
+
+    [noisy, clean] = nc_loader(data_list=config.train_list, data_root=config.train_root).forward()
 
     # model define
-    model = Pix2Pix.model.Pix2Pix().netG
+    model = Pix2Pix.model.Pix2Pix(config)
 
     # transfer learning
-    model.load_state_dict(torch.load(config.lod_dir+'/'+pretrained_name)) # model directory
+    model.load_state_dict(torch.load(config.log_dir+'/'+pretrained_name)) # model directory
+    model = model.netG
 
     # optimizer
     optimizer = Adam(model.parameters(), lr=learning_rate)
@@ -86,7 +79,7 @@ for repeat in range(repeats):
     for sample in range(config['sample_size_list'][0]):
         output[sample, :] = match_intensity(clean[sample, :], output[sample, :])
 
-    quantify(Data_eval[key_s], metrics_key, clean[0, 0, :], output[0, 0, :])
+    quantify(Data_eval, metrics_key, clean[0, 0, :], output[0, 0, :])
 
 plot_quantifications([Data_eval], ['Pretrained with FMD'], metrics_key,
                      ylabel=['MSE', 'SSMI', 'Average FRC'], xlabel='Peak signal intensity (photon)',
