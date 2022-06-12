@@ -69,7 +69,7 @@ class Pix2Pix(nn.Module):
             self.optimizer_D.zero_grad()
             D_loss_fake = self.criterion_GAN(D_fake_out, False)
             D_loss_real = self.criterion_GAN(D_real_out, True)
-            self.D_loss = (D_loss_fake + D_loss_real) / 10
+            self.D_loss = (D_loss_fake + D_loss_real) / 2
 
             tolerance = 0.05
             # D_loss가 0.5 미만일때 --> frozen
@@ -80,9 +80,9 @@ class Pix2Pix(nn.Module):
                 # for param in self.netD.parameters():
                 #     param.requires_grad = True
                 # D_loss.requires_grad_(True)
-            if self.D_loss > 0.1 + tolerance:
-                self.D_loss.backward()
-                self.optimizer_D.step()
+            # if self.D_loss >= 0.1 - tolerance:
+            self.D_loss.backward()
+            self.optimizer_D.step()
 
         train_dict = {}
         train_dict['G_loss'] = self.G_loss
