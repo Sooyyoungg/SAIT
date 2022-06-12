@@ -180,7 +180,7 @@ class UnetSkipConnectionBlock(nn.Module):
 ## Discriminator
 # Defines a PatchGAN discriminator
 class NLayerDiscriminator(nn.Module):
-    def __init__(self, input_nc, ndf=64, n_layers=3, norm_layer=nn.BatchNorm2d):
+    def __init__(self, input_nc, ndf=64, n_layers=1, norm_layer=nn.BatchNorm2d):
         super(NLayerDiscriminator, self).__init__()
         if type(norm_layer) == functools.partial:  # no need to use bias as BatchNorm2d has affine parameters
             use_bias = norm_layer.func == nn.InstanceNorm2d

@@ -4,8 +4,8 @@ import os
 import sys
 sys.path.append(os.path.dirname(os.path.abspath(os.path.dirname(__file__))))
 from Transfer_Config import Transfer_Config
-config = Transfer_Config()
-if config.model_transfer:
+config_t = Transfer_Config()
+if config_t.model_transfer:
     import Pix2Pix.networks as networks
 else:
     import networks
@@ -36,6 +36,7 @@ class Pix2Pix(nn.Module):
         self.G_loss = 0
         self.G_loss_GAN = 0
         self.G_loss_L1 = 0
+        self.D_loss = 0
 
     ## functions
     def train(self, idx, data):
@@ -44,11 +45,11 @@ class Pix2Pix(nn.Module):
 
         ### forward ###
         # Generator
-        fake_depth = self.netG(sem) # Tensor (32, 1, 66, 45)
+        fake_depth = self.netG(sem) # Tensor (batch, 1, 66, 45)
 
         # Discriminator - fake
         D_fake_in = torch.cat((fake_depth, sem), dim=1)
-        D_fake_out = self.netD(D_fake_in.detach())   # torch.Size([32, 1, 6, 3])
+        D_fake_out = self.netD(D_fake_in.detach())   # torch.Size([batch, 1, 6, 3])
 
         # Discriminator - real
         D_real_in = torch.cat((real_depth, sem), dim=1)
@@ -56,27 +57,38 @@ class Pix2Pix(nn.Module):
 
         ### backward ###
         # Loss - G
-        if idx % 5 == 0:
-            self.optimizer_G.zero_grad()
-            self.G_loss_GAN = self.criterion_GAN(D_fake_out, True)
-            self.G_loss_L1 = self.criterion_L1(fake_depth, real_depth)
-            self.G_loss = self.G_loss_GAN + self.config.lambda_L1 * self.G_loss_L1
-            self.G_loss.backward(retain_graph=True)
-            self.optimizer_G.step()
+        self.optimizer_G.zero_grad()
+        self.G_loss_GAN = self.criterion_GAN(D_fake_out, True)
+        self.G_loss_L1 = self.criterion_L1(fake_depth, real_depth)
+        self.G_loss = self.G_loss_GAN + self.config.lambda_L1 * self.G_loss_L1
+        self.G_loss.backward(retain_graph=True)
+        self.optimizer_G.step()
 
         # Loss - D
-        self.optimizer_D.zero_grad()
-        D_loss_fake = self.criterion_GAN(D_fake_out, False)
-        D_loss_real = self.criterion_GAN(D_real_out, True)
-        D_loss = (D_loss_fake + D_loss_real) * 0.5
-        D_loss.backward()
-        self.optimizer_D.step()
+        if idx % 10 == 0:
+            self.optimizer_D.zero_grad()
+            D_loss_fake = self.criterion_GAN(D_fake_out, False)
+            D_loss_real = self.criterion_GAN(D_real_out, True)
+            self.D_loss = (D_loss_fake + D_loss_real) / 10
+
+            tolerance = 0.05
+            # D_loss가 0.5 미만일때 --> frozen
+            # if D_loss < 0.5:
+                # for param in self.netD.parameters():
+                #     param.requires_grad = False
+            # else:
+                # for param in self.netD.parameters():
+                #     param.requires_grad = True
+                # D_loss.requires_grad_(True)
+            if self.D_loss > 0.1 + tolerance:
+                self.D_loss.backward()
+                self.optimizer_D.step()
 
         train_dict = {}
         train_dict['G_loss'] = self.G_loss
         train_dict['G_GAN_loss'] = self.G_loss_GAN
         train_dict['G_L1_loss'] =self. G_loss_L1
-        train_dict['D_loss'] = D_loss
+        train_dict['D_loss'] = self.D_loss
         train_dict['fake_depth'] = fake_depth
         train_dict['real_depth'] = real_depth
 
@@ -103,12 +115,12 @@ class Pix2Pix(nn.Module):
             # Loss - G
             G_loss_GAN = self.criterion_GAN(D_fake_out, True)
             G_loss_L1 = self.criterion_L1(fake_depth, real_depth)
-            G_loss = G_loss_GAN + G_loss_L1
+            G_loss = G_loss_GAN + self.config.lambda_L1 * G_loss_L1
 
             # Loss - D
             D_loss_fake = self.criterion_GAN(D_fake_out, False)
             D_loss_real = self.criterion_GAN(D_real_out, True)
-            D_loss = D_loss_fake + D_loss_real
+            D_loss = (D_loss_fake + D_loss_real) / 10
 
             val_dict = {}
             val_dict['G_loss'] = G_loss

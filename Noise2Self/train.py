@@ -38,6 +38,7 @@ def train(model,
             )
 
             net_input, mask = masker.mask(noisy, index % (masker.n_masks - 1))
+            # net_input: torch.Size([16, 1, 66, 45])
 
             optimizer.zero_grad()
 
@@ -60,11 +61,10 @@ def train(model,
                 net_output = model(net_input)
 
                 val_loss = loss_fn(net_output * mask, noisy * mask) * masker.n_masks
-                print(val_loss.item())
 
                 # find best validation loss
                 if val_loss.item() < best_val_loss:
-                    best_val_loss = val_loss.item # update current best val loss
+                    best_val_loss = val_loss.item() # update current best val loss
                     torch.save(model.state_dict(), ".best_checkpoint")
                     iters_no_improve = 0
                 else:

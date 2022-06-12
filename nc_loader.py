@@ -17,9 +17,9 @@ class nc_loader(nn.Module):
 
         for i in range(len(self.data_list)):
             sem = imageio.imread(data_root+'/SEM/'+self.data_list.iloc[i, 0])
-            sem = np.asarray(sem)   # (66, 45)
+            sem = np.reshape(np.asarray(sem), (1, 66, 45))   # (66, 45)
             sub = self.data_list.iloc[i, 0].split('_itr')[0]
-            depth = np.asarray(imageio.imread(data_root+'/Depth/'+sub+'.png'))   # (66, 45)
+            depth = np.reshape(np.asarray(imageio.imread(data_root+'/Depth/'+sub+'.png')), (1, 66, 45))   # (66, 45)
             tot_sem.append(sem)
             tot_depth.append(depth)
 

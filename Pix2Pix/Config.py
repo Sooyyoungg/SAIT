@@ -14,7 +14,7 @@ class Config:
     test_img_dir = '/scratch/connectome/conmaster/Pycharm_projects/SAIT/Pix2Pix/Tested_images'
 
     ## basic parameters
-    gpu_ids = [3]
+    gpu_ids = [7]
     n_epoch = 100
     n_iter = 100
     n_iter_decay = 100
@@ -25,7 +25,7 @@ class Config:
     beta1 = 0.5
     pool_size = 50
     image_display_iter = 100
-    gan_mode = 'vanilla'
+    gan_mode = 'lsgan'
     lambda_L1 = 100
 
     # model parameters

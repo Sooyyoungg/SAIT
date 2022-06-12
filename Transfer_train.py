@@ -1,5 +1,6 @@
 # import os
 # import sys
+from skimage.metrics import mean_squared_error
 from torch.optim import Adam
 # sys.path.append("")
 import torch
@@ -22,9 +23,9 @@ device = torch.device('cuda:' + str(config.gpu_ids[0]) if torch.cuda.is_availabl
 print("Training Start")
 batch_size = 16
 n_epoch = 100 ## epoch 값
-repeats = 10
+repeats = 1
 learning_rate = 0.0001
-pretrained_name = '100_19500000.pt'
+pretrained_name = 'FMD_epoch50_model'
 loss = 'mse' # [mse, mae]
 Data_eval = {}
 metrics_key = ['mse', 'ssmi', 'frc']
@@ -38,11 +39,14 @@ for repeat in range(repeats):
     print("No. {}".format(repeat))
 
     # data loader
-    train_data = DataSplit(data_list=config.valid_half_list, data_root=config.valid_root)
-    data_loader = torch.utils.data.DataLoader(train_data, batch_size=batch_size, shuffle=True,
+    valid_data = DataSplit(data_list=config.valid_half_list, data_root=config.valid_root)
+    data_loader = torch.utils.data.DataLoader(valid_data, batch_size=batch_size, shuffle=True,
                                                     num_workers=16, pin_memory=False)
 
-    [noisy, clean] = nc_loader(data_list=config.train_list, data_root=config.train_root).forward()
+    [noisy, clean] = nc_loader(data_list=config.valid_half_list, data_root=config.valid_root).forward()
+    # print(noisy.shape) # (50, 1, 66, 45)
+    noisy = torch.Tensor(noisy)
+    clean = torch.Tensor(clean)
 
     # model define
     model = Pix2Pix.model.Pix2Pix(p2p_config)
@@ -69,7 +73,13 @@ for repeat in range(repeats):
 
     output = output.cpu().detach().numpy()
     noisy = noisy.cpu().detach().numpy()
-    clean = clean.cpu().detach.numpy()
+    clean = clean.cpu().detach().numpy()
+
+    # RMSE 계산 (output & clean)
+    rmse = 0
+    for i in range(output.shape[0]):
+        rmse += mean_squared_error(output[i, 0, :, :], clean[i, 0, :, :]) ** 0.5
+    avg_rmse = rmse / output.shape[0]
 
     if repeat == 0 and True:
         frc, spatial_freq = frc(output[0, 0, :], clean[0, 0, :])
