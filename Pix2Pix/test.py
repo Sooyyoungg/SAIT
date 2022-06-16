@@ -1,3 +1,6 @@
+import time
+
+import cv2
 import torch
 import pandas as pd
 import numpy as np
@@ -19,17 +22,18 @@ def main():
     data_loader_test = torch.utils.data.DataLoader(test_data, batch_size=1, shuffle=True, num_workers=16, pin_memory=False)
     print("Test: ", len(data_loader_test), "x", 1,"(batch size) =", len(test_list))
 
-    # get latest model -> best model로 수정 필요
-    latest_epoch = np.loadtxt(config.log_dir+'/latest_log.txt', dtype="int", delimiter=",")[-2]
-    latest_itrs = np.loadtxt(config.log_dir+'/latest_log.txt', dtype="int", delimiter=",")[-1]
+    # get latest model
+    # latest_epoch = np.loadtxt(config.log_dir+'/latest_log.txt', dtype="int", delimiter=",")[-2]
+    # latest_itrs = np.loadtxt(config.log_dir+'/latest_log.txt', dtype="int", delimiter=",")[-1]
 
     ## Start Training
     model = Pix2Pix(config)
-    model.load_state_dict(torch.load(config.log_dir+'/{}_{}_.pt'.format(latest_epoch, latest_itrs)))
+    model.load_state_dict(torch.load(config.log_dir+'/SEM_best_epoch32_itr6240000_.pt'))
     model.to(device)
 
     print("Start Testing!!")
     tot_itr = 0
+    start_time = time.time()
     with torch.no_grad():
         for i, data in enumerate(data_loader_test):
             tot_itr += i
@@ -37,11 +41,18 @@ def main():
 
             fake_depth = test_dict['fake_depth']
             sub = test_dict['sub'][0]
-            print(sub)
+
+            fake_depth = fake_depth[0, 0, :, :].detach().cpu().numpy()
+            # post-processing
+            fake_depth = ((fake_depth + 1) / 2) * 255.0
 
             # image 저장
             print(i, "th image save")
-            save_image(fake_depth, '{}/{}'.format(config.test_img_dir,sub))
+            # save_image(fake_depth, '{}/{}'.format(config.test_img_dir,sub))
+            cv2.imwrite('{}/{}'.format(config.test_img_dir,sub), fake_depth)
+
+    end_time = time.time()
+    print("Testing Time: ", end_time - start_time)
 
 if __name__ == '__main__':
     main()

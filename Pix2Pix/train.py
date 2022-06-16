@@ -39,7 +39,6 @@ def main():
     itr_per_epoch = len(data_loader_train)
     tot_itr = 0
     min_v_rmse = 100
-    min_v_loss_G = 100
     for epoch in range(config.n_epoch):
         for i, data in enumerate(data_loader_train):
             tot_itr += i
@@ -66,8 +65,10 @@ def main():
             # RMSE
             rmse = 0
             for b in range(config.batch_size):
-                rmse += mean_squared_error(fake_depth[b, 0, :, :].detach().cpu(), real_depth[b, 0, :, :].detach().cpu()) ** 0.5
-            avg_rmse = rmse / config.batch_size
+                f_image_r = ((fake_depth[b, 0, :, :].detach().cpu().numpy() + 1) / 2) * 255.0
+                r_image_r = ((real_depth[b, 0, :, :].detach().cpu().numpy() + 1) / 2) * 255.0
+                rmse += mean_squared_error(f_image_r, r_image_r)
+            avg_rmse = (rmse / config.batch_size) ** 0.5
 
             # save & print loss values
             train_writer.add_scalar('Loss_G_GAN', train_dict['G_GAN_loss'], tot_itr)
@@ -89,23 +90,26 @@ def main():
             v_fake_depth = val_dict['fake_depth']
             v_real_depth = val_dict['real_depth']
 
+            v_f_image = v_fake_depth[0, 0, :, :].detach().cpu().numpy()
+            v_r_image = v_real_depth[0, 0, :, :].detach().cpu().numpy()
+            # post-processing
+            v_f_image = ((v_f_image + 1) / 2) * 255.0
+            v_r_image = ((v_r_image + 1) / 2) * 255.0
+
             # save image
             if v == r:
-                v_f_image = v_fake_depth[0, 0, :, :].detach().cpu().numpy()
-                v_r_image = v_real_depth[0, 0, :, :].detach().cpu().numpy()
-                # post-processing
-                v_f_image = ((v_f_image + 1) / 2) * 255.0
-                v_r_image = ((v_r_image + 1) / 2) * 255.0
                 # save
                 cv2.imwrite('{}/Validation/{}_fake_depth.png'.format(config.img_dir, epoch + 1), v_f_image)
                 cv2.imwrite('{}/Validation/{}_real_depth.png'.format(config.img_dir, epoch + 1), v_r_image)
 
             # mse
-            valid_mse += mean_squared_error(v_fake_depth[0, 0, :, :].detach().cpu(), v_real_depth[0, 0, :, :].detach().cpu()) ** 0.5
+            valid_mse += mean_squared_error(v_f_image, v_r_image)
 
         v_G_avg_loss = float(valid_G_loss / (v+1))
         v_D_avg_loss = float(valid_D_loss / (v+1))
-        valid_rmse = valid_mse / len(data_loader_valid)
+        valid_rmse = (valid_mse / len(data_loader_valid)) ** 0.5
+
+        train_writer.add_scalar('Valid_Avg_RMSE', valid_rmse, epoch)
         print("===> Validation <=== Epoch: %d/%d | Loss_G: %.5f | Loss_D: %.5f | Avg RMSE: %.5f"%(epoch+1, config.n_epoch, v_G_avg_loss, v_D_avg_loss, valid_rmse))
 
         networks.update_learning_rate(model.G_scheduler, model.optimizer_G)
@@ -118,10 +122,9 @@ def main():
                 f.writelines('%d, %d'%(epoch+1, tot_itr))
 
         # save best performance model
-        if valid_rmse < min_v_rmse and v_G_avg_loss < min_v_loss_G:
+        if valid_rmse < min_v_rmse:
             min_v_rmse = valid_rmse
-            min_v_loss_G = v_G_avg_loss
-            torch.save(model.state_dict(), config.log_dir+'/{}_best_epoch{}_itr{}_.pt'.format(config.data_name, epoch+1, tot_itr)) # SEM_best_epoch80_itr123124.pt
+            torch.save(model.state_dict(), config.log_dir+'/{}_best_epoch{}_itr{}_rmse{}.pt'.format(config.data_name, epoch+1, tot_itr, min_v_rmse)) # SEM_best_epoch80_itr123124.pt
 
 if __name__ == '__main__':
     main()
