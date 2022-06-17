@@ -9,8 +9,8 @@ class Config:
     test_root = '/scratch/connectome/conmaster/Pycharm_projects/SAIT/Dataset/Test/'
 
     # output directory
-    log_dir = '/scratch/connectome/conmaster/Pycharm_projects/SAIT/Pix2Pix/log/Unet'
-    img_dir = '/scratch/connectome/conmaster/Pycharm_projects/SAIT/Pix2Pix/Generated_images/Unet'
+    log_dir = '/scratch/connectome/conmaster/Pycharm_projects/SAIT/Pix2Pix/log/wgangp'
+    img_dir = '/scratch/connectome/conmaster/Pycharm_projects/SAIT/Pix2Pix/Generated_images/wgangp'
     test_img_dir = '/scratch/connectome/conmaster/Pycharm_projects/SAIT/Pix2Pix/Tested_images'
 
     ## basic parameters
@@ -19,13 +19,13 @@ class Config:
     n_iter = 100
     n_iter_decay = 100
     batch_size = 64
-    lr = 0.0001
+    lr = 0.0002
     lr_policy = 'step'
     lr_decay_iters = 50
     beta1 = 0.5
     pool_size = 50
     image_display_iter = 100
-    gan_mode = 'vanilla'
+    gan_mode = 'wgangp'
     lambda_L1 = 100
 
     # model parameters

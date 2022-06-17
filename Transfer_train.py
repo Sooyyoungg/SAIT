@@ -25,7 +25,7 @@ batch_size = 16
 n_epoch = 100 ## epoch 값
 repeats = 1
 learning_rate = 0.0001
-pretrained_name = 'FMD_epoch50_model'
+pretrained_name = 'SEM_best_epoch51_itr9945000.pt'
 loss = 'mse' # [mse, mae]
 Data_eval = {}
 metrics_key = ['mse', 'ssmi', 'frc']
@@ -40,6 +40,7 @@ for repeat in range(repeats):
 
     # data loader
     valid_data = DataSplit(data_list=config.valid_half_list, data_root=config.valid_root)
+    print(len(valid_data))
     data_loader = torch.utils.data.DataLoader(valid_data, batch_size=batch_size, shuffle=True,
                                                     num_workers=16, pin_memory=False)
 
@@ -76,23 +77,24 @@ for repeat in range(repeats):
     clean = clean.cpu().detach().numpy()
 
     # RMSE 계산 (output & clean)
-    rmse = 0
+    mse = 0
     for i in range(output.shape[0]):
-        rmse += mean_squared_error(output[i, 0, :, :], clean[i, 0, :, :]) ** 0.5
-    avg_rmse = rmse / output.shape[0]
-
-    if repeat == 0 and True:
-        frc, spatial_freq = frc(output[0, 0, :], clean[0, 0, :])
-        plt.figure()
-        plt.plot(spatial_freq, frc, '-', linewidth=2, color='red', label='Pretrained with {}'.format(pretrained_name))
-        plt.legend(loc='lower left')
-        plt.title('FRC curve')
-
-    for sample in range(config['sample_size_list'][0]):
-        output[sample, :] = match_intensity(clean[sample, :], output[sample, :])
-
-    quantify(Data_eval, metrics_key, clean[0, 0, :], output[0, 0, :])
-
-plot_quantifications([Data_eval], ['Pretrained with FMD'], metrics_key,
-                     ylabel=['MSE', 'SSMI', 'Average FRC'], xlabel='Peak signal intensity (photon)',
-                     title='Microtubule test images: performance on peak signal intensity (# of shots: 10; loss: MSE)')
+        mse += mean_squared_error(output[i, 0, :, :], clean[i, 0, :, :]) ** 0.5
+    rmse = mse / output.shape[0]
+    print(rmse)
+#
+#     if repeat == 0 and True:
+#         frc, spatial_freq = frc(output[0, 0, :], clean[0, 0, :])
+#         plt.figure()
+#         plt.plot(spatial_freq, frc, '-', linewidth=2, color='red', label='Pretrained with {}'.format(pretrained_name))
+#         plt.legend(loc='lower left')
+#         plt.title('FRC curve')
+#
+#     for sample in range(config['sample_size_list'][0]):
+#         output[sample, :] = match_intensity(clean[sample, :], output[sample, :])
+#
+#     quantify(Data_eval, metrics_key, clean[0, 0, :], output[0, 0, :])
+#
+# plot_quantifications([Data_eval], ['Pretrained with FMD'], metrics_key,
+#                      ylabel=['MSE', 'SSMI', 'Average FRC'], xlabel='Peak signal intensity (photon)',
+#                      title='Microtubule test images: performance on peak signal intensity (# of shots: 10; loss: MSE)')
