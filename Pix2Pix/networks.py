@@ -107,8 +107,8 @@ class UnetGenerator(nn.Module):
 
         # construct unet structure  unet_block
         # level == 1: outermost / level == 5: innermost
-        unet_block = UnetSkipConnectionBlock(ngf * 8, ngf * 16, input_nc=None, submodule=None, innermost=True, norm_layer=norm_layer)  # 512x8x5 -> 1024x4x2
-        unet_block = UnetSkipConnectionBlock(ngf * 4, ngf * 8, input_nc=None, submodule=unet_block, level=4, norm_layer=norm_layer)   # 256x16x11 -> 512x8x5
+        # unet_block = UnetSkipConnectionBlock(ngf * 8, ngf * 16, input_nc=None, submodule=None, innermost=True, norm_layer=norm_layer)  # 512x8x5 -> 1024x4x2
+        unet_block = UnetSkipConnectionBlock(ngf * 4, ngf * 8, input_nc=None, submodule=None, innermost=True, norm_layer=norm_layer)   # 256x16x11 -> 512x8x5
         unet_block = UnetSkipConnectionBlock(ngf * 2, ngf * 4, input_nc=None, submodule=unet_block, level=3, norm_layer=norm_layer)   # 128x33x22 -> 256x16x11
         unet_block = UnetSkipConnectionBlock(ngf, ngf * 2, input_nc=None, submodule=unet_block, level=2, norm_layer=norm_layer)       # 64x66x45 -> 128x33x22
         self.model = UnetSkipConnectionBlock(output_nc, ngf, input_nc=input_nc, submodule=unet_block, outermost=True, norm_layer=norm_layer)  # 1x66x45 -> 64x66x45
@@ -149,19 +149,18 @@ class UnetSkipConnectionBlock(nn.Module):
             up = [uprelu, upconv, nn.Tanh()]
             model = down + [submodule] + up
         elif innermost:
-            # upconv = nn.ConvTranspose2d(inner_nc, outer_nc, kernel_size=4, stride=2, padding=1, bias=use_bias)
-            downconv = nn.Conv2d(input_nc, inner_nc, kernel_size=5, stride=1, padding=1, bias=use_dropout)
-            upconv = nn.ConvTranspose2d(inner_nc, outer_nc, kernel_size=5, stride=1, padding=1, bias=use_dropout)
+            downconv = nn.Conv2d(input_nc, inner_nc, kernel_size=(4, 5), stride=2, padding=1, bias=use_dropout)
+            upconv = nn.ConvTranspose2d(inner_nc, outer_nc, kernel_size=(4, 5), stride=2, padding=1, bias=use_dropout)
             down = [downrelu, downconv]
             up = [uprelu, upconv, upnorm]
             model = down + up
         else:
-            if level == 2:
-                downconv = nn.Conv2d(input_nc, inner_nc, kernel_size=5, stride=3, padding=1, bias=use_dropout)
-                upconv = nn.ConvTranspose2d(inner_nc * 2, outer_nc, kernel_size=5, stride=3, padding=1, bias=use_dropout)
+            if level % 2 == 0:
+                downconv = nn.Conv2d(input_nc, inner_nc, kernel_size=(4, 5), stride=2, padding=1, bias=use_dropout)
+                upconv = nn.ConvTranspose2d(inner_nc * 2, outer_nc, kernel_size=(4, 5), stride=2, padding=1, bias=use_dropout)
             else:
-                downconv = nn.Conv2d(input_nc, inner_nc, kernel_size=7, stride=1, padding=1, bias=use_dropout)
-                upconv = nn.ConvTranspose2d(inner_nc * 2, outer_nc, kernel_size=7, stride=1, padding=1, bias=use_dropout)
+                downconv = nn.Conv2d(input_nc, inner_nc, kernel_size=(5, 4), stride=2, padding=1, bias=use_dropout)
+                upconv = nn.ConvTranspose2d(inner_nc * 2, outer_nc, kernel_size=(5, 4), stride=2, padding=1, bias=use_dropout)
             down = [downrelu, downconv, downnorm]
             up = [uprelu, upconv, upnorm]
             if use_dropout:

@@ -4,6 +4,7 @@ import pandas as pd
 import tensorboardX
 import cv2
 from sklearn.metrics import mean_squared_error
+import torchsummary
 
 from Config import Config
 from DataSplit import DataSplit
@@ -31,6 +32,8 @@ def main():
     ## Start Training
     model = Pix2Pix(config)
     model.to(device)
+
+    torchsummary.summary(model, (1, 66, 45), device='cpu')
 
     train_writer = tensorboardX.SummaryWriter(config.log_dir)
 

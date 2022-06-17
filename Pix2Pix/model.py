@@ -141,3 +141,7 @@ class Pix2Pix(nn.Module):
             test_dict['fake_depth'] = fake_depth
             test_dict['sub'] = sub
         return test_dict
+
+    def forward(self, x):
+        fake_depth = self.netG(x)
+        return fake_depth
