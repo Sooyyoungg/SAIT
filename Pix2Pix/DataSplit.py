@@ -1,8 +1,11 @@
 import torch.nn as nn
 import pandas as pd
 import numpy as np
-import imageio
+from PIL import Image
 from torchvision import transforms
+
+import matplotlib.pyplot as plt
+import matplotlib.image as img
 
 class DataSplit(nn.Module):
     def __init__(self, data_list, data_root, do_transform=True):
@@ -16,12 +19,25 @@ class DataSplit(nn.Module):
         tot_depth = []
 
         for i in range(len(self.data_list)):
-            sem = imageio.imread(data_root+'/SEM/'+self.data_list.iloc[i, 0])
-            sem = np.asarray(sem)   # (66, 45)
+            sem = np.full((66, 66), 167)
+            sem_org = Image.open(data_root+'/SEM/'+self.data_list.iloc[i, 0]).convert('L')
+            sem_org = np.asarray(sem_org)       # (66, 45)
+            # print(sem_org[0, 0])
+            # print(np.min(sem_org), np.max(sem_org))
+            sem[:, 10:55] = sem_org             # (66, 66)
+
+            # plt.imshow(sem, cmap='gray')
+            # plt.show()
+
             sub = self.data_list.iloc[i, 0].split('_itr')[0]
-            depth = np.asarray(imageio.imread(data_root+'/Depth/'+sub+'.png'))   # (66, 45)
-            tot_sem.append(sem)
-            tot_depth.append(depth)
+            depth = np.full((66, 66), 167)
+            depth_org = Image.open(data_root+'/Depth/'+sub+'.png')
+            depth_org = np.asarray(depth_org)   # (66, 45)
+            depth[:, 10:55] = depth_org         # (66, 66)
+            # print(np.min(depth_org), np.max(depth_org))
+
+            tot_sem.append(sem_org)
+            tot_depth.append(depth_org)
 
         # Train: (40000, 66, 45) / Valid: (8000, 66, 45)
         self.tot_sem = np.array(tot_sem)

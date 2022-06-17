@@ -108,11 +108,17 @@ class UnetGenerator(nn.Module):
         # construct unet structure  unet_block
         # level == 1: outermost / level == 5: innermost
         unet_block = UnetSkipConnectionBlock(ngf * 8, ngf * 8, input_nc=None, submodule=None, innermost=True, norm_layer=norm_layer)  # 512x14x7 -> 512x2x1
-        unet_block = UnetSkipConnectionBlock(ngf * 8, ngf * 8, input_nc=None, submodule=unet_block, level=5, norm_layer=norm_layer) # 256x18x11 -> 512x14x7
-        unet_block = UnetSkipConnectionBlock(ngf * 4, ngf * 8, input_nc=None, submodule=unet_block, level=4, norm_layer=norm_layer) # 256x18x11 -> 512x14x7
-        unet_block = UnetSkipConnectionBlock(ngf * 2, ngf * 4, input_nc=None, submodule=unet_block, level=3, norm_layer=norm_layer) # 128x22x15 -> 256x18x11
-        unet_block = UnetSkipConnectionBlock(ngf, ngf * 2, input_nc=None, submodule=unet_block, level=2, norm_layer=norm_layer)     # 64x66x45 -> 128x22x15
-        self.model = UnetSkipConnectionBlock(output_nc, ngf, input_nc=input_nc, submodule=unet_block, outermost=True, norm_layer=norm_layer)  # 1x66x45 -> 64x66x45
+        unet_block = UnetSkipConnectionBlock(ngf * 8, ngf * 8, input_nc=None, submodule=unet_block, level=5, norm_layer=norm_layer)   # 256x18x11 -> 512x14x7
+        unet_block = UnetSkipConnectionBlock(ngf * 4, ngf * 8, input_nc=None, submodule=unet_block, level=4, norm_layer=norm_layer)   # 256x18x11 -> 512x14x7
+        unet_block = UnetSkipConnectionBlock(ngf * 2, ngf * 4, input_nc=None, submodule=unet_block, level=3, norm_layer=norm_layer)   # 128x22x15 -> 256x18x11
+        unet_block = UnetSkipConnectionBlock(ngf, ngf * 2, input_nc=None, submodule=unet_block, level=2, norm_layer=norm_layer)       # 64x66x45 -> 128x22x15
+
+        ## For Square image
+        # unet_block = UnetSkipConnectionBlock(ngf * 8, ngf * 16, input_nc=None, submodule=None, innermost=True, norm_layer=norm_layer)         # 512x8x8 -> 1024x4x4
+        # unet_block = UnetSkipConnectionBlock(ngf * 4, ngf * 8, input_nc=None, submodule=unet_block, level=4, norm_layer=norm_layer)           # 256x16x16 -> 512x8x8
+        # unet_block = UnetSkipConnectionBlock(ngf * 2, ngf * 4, input_nc=None, submodule=unet_block, level=3, norm_layer=norm_layer)           # 128x33x33 -> 256x16x16
+        # unet_block = UnetSkipConnectionBlock(ngf, ngf * 2, input_nc=None, submodule=unet_block, level=2, norm_layer=norm_layer)               # 64x33x33 -> 128x33x33
+        self.model = UnetSkipConnectionBlock(output_nc, ngf, input_nc=input_nc, submodule=unet_block, outermost=True, norm_layer=norm_layer)  # 1x66x66 -> 64x66x66
 
     def forward(self, input):
         return self.model(input)
@@ -141,6 +147,8 @@ class UnetSkipConnectionBlock(nn.Module):
         # 여기서 inner most를 제외하고 inner_nc * 2가 channel 수로 들어가는 이유
         # : skip connection을 하기 때문에 동일한 level에서의 encoder의 결과 + 같은 크기의 decoder output (둘의 output size 동일)
         # innermost에서는 encoder의 가장 마지막 layer의 output을 그대로 사용하기 때문에 2배일 필요 X
+
+        ## For Rectangular image
         if outermost:
             conv = nn.Conv2d(input_nc, inner_nc, kernel_size=3, stride=1, padding=1, bias=use_bias)
             upconv = nn.ConvTranspose2d(inner_nc * 2, outer_nc, kernel_size=3, stride=1, padding=1) # image size x 2
@@ -168,10 +176,37 @@ class UnetSkipConnectionBlock(nn.Module):
             else:
                 model = down + [submodule] + up
 
+        ## For Square images
+        """if outermost:
+            conv = nn.Conv2d(input_nc, inner_nc, kernel_size=3, stride=1, padding=1, bias=use_bias)
+            upconv = nn.ConvTranspose2d(inner_nc * 2, outer_nc, kernel_size=3, stride=1, padding=1)  # image size x 2
+            down = [conv]
+            up = [uprelu, upconv, nn.Tanh()]
+            model = down + [submodule] + up
+        elif innermost:
+            downconv = nn.Conv2d(input_nc, inner_nc, kernel_size=5, stride=1, padding=1, bias=use_dropout)
+            upconv = nn.ConvTranspose2d(inner_nc, outer_nc, kernel_size=5, stride=1, padding=1, bias=use_dropout)
+            down = [downrelu, downconv]
+            up = [uprelu, upconv, upnorm]
+            model = down + up
+        else:
+            if level == 3:
+                downconv = nn.Conv2d(input_nc, inner_nc, kernel_size=5, stride=2, padding=1, bias=use_dropout)
+                upconv = nn.ConvTranspose2d(inner_nc * 2, outer_nc, kernel_size=5, stride=2, padding=1, bias=use_dropout)
+            else:
+                downconv = nn.Conv2d(input_nc, inner_nc, kernel_size=4, stride=2, padding=1, bias=use_dropout)
+                upconv = nn.ConvTranspose2d(inner_nc * 2, outer_nc, kernel_size=4, stride=2, padding=1, bias=use_dropout)
+            down = [downrelu, downconv, downnorm]
+            up = [uprelu, upconv, upnorm]
+            if use_dropout:
+                model = down + [submodule] + up + [nn.Dropout(0.5)]
+            else:
+                model = down + [submodule] + up"""
+
         self.model = nn.Sequential(*model)
 
     def forward(self, x):
-        # 마지막 layer의 output은 지전해준 channel의 개수에 맞춰야 하므로 skip connection 적용하지 X
+        # 마지막 layer의 output은 지정해준 channel의 개수에 맞춰야 하므로 skip connection 적용하지 X
         if self.outermost:
             return self.model(x)
         else:
