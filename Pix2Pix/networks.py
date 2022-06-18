@@ -108,8 +108,8 @@ class UnetGenerator(nn.Module):
         # construct unet structure  unet_block
         # level == 1: outermost / level == 5: innermost
         # unet_block = UnetSkipConnectionBlock(ngf * 8, ngf * 16, input_nc=None, submodule=None, innermost=True, norm_layer=norm_layer)  # 512x8x5 -> 1024x4x2
-        unet_block = UnetSkipConnectionBlock(ngf * 4, ngf * 8, input_nc=None, submodule=None, innermost=True, norm_layer=norm_layer)   # 256x16x11 -> 512x8x5
-        unet_block = UnetSkipConnectionBlock(ngf * 2, ngf * 4, input_nc=None, submodule=unet_block, level=3, norm_layer=norm_layer)   # 128x33x22 -> 256x16x11
+        unet_block = UnetSkipConnectionBlock(ngf * 8, ngf * 16, input_nc=None, submodule=None, innermost=True, norm_layer=norm_layer)   # 256x16x11 -> 512x8x5
+        unet_block = UnetSkipConnectionBlock(ngf * 2, ngf * 8, input_nc=None, submodule=unet_block, level=3, norm_layer=norm_layer)   # 128x33x22 -> 256x16x11
         unet_block = UnetSkipConnectionBlock(ngf, ngf * 2, input_nc=None, submodule=unet_block, level=2, norm_layer=norm_layer)       # 64x66x45 -> 128x33x22
         self.model = UnetSkipConnectionBlock(output_nc, ngf, input_nc=input_nc, submodule=unet_block, outermost=True, norm_layer=norm_layer)  # 1x66x45 -> 64x66x45
 
@@ -206,17 +206,17 @@ class NLayerDiscriminator(nn.Module):
             ]
 
         # image size & # of filter 그대로 계산만
-        nf_mult_prev = nf_mult
-        nf_mult = min(2 ** n_layers, 8)
-        sequence += [
-            nn.Conv2d(ndf * nf_mult_prev, ndf * nf_mult, kernel_size=kw, stride=1, padding=padw, bias=use_bias),
-            norm_layer(ndf * nf_mult),
-            nn.LeakyReLU(0.2, True)
-        ]
+        # nf_mult_prev = nf_mult
+        # nf_mult = min(2 ** n_layers, 8)
+        # sequence += [
+        #     nn.Conv2d(ndf * nf_mult_prev, ndf * nf_mult, kernel_size=kw, stride=1, padding=padw, bias=use_bias),
+        #     norm_layer(ndf * nf_mult),
+        #     nn.LeakyReLU(0.2, True)
+        # ]
 
         # output 1 channel prediction map
         sequence += [
-            nn.Conv2d(ndf * nf_mult, 1, kernel_size=kw, stride=1, padding=padw)]
+            nn.Conv2d(ndf * nf_mult, 1, kernel_size=3, stride=1, padding=padw)]
         self.model = nn.Sequential(*sequence)
 
     def forward(self, input):

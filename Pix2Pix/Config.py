@@ -9,12 +9,12 @@ class Config:
     test_root = '/scratch/connectome/conmaster/Pycharm_projects/SAIT/Dataset/Test/'
 
     # output directory
-    log_dir = '/scratch/connectome/conmaster/Pycharm_projects/SAIT/Pix2Pix/log/3layers'
-    img_dir = '/scratch/connectome/conmaster/Pycharm_projects/SAIT/Pix2Pix/Generated_images/3layers'
+    log_dir = '/scratch/connectome/conmaster/Pycharm_projects/SAIT/Pix2Pix/log/3layers_D'
+    img_dir = '/scratch/connectome/conmaster/Pycharm_projects/SAIT/Pix2Pix/Generated_images/3layers_D'
     test_img_dir = '/scratch/connectome/conmaster/Pycharm_projects/SAIT/Pix2Pix/Tested_images'
 
     ## basic parameters
-    gpu_ids = [6]
+    gpu_ids = [7]
     n_epoch = 100
     n_iter = 100
     n_iter_decay = 100

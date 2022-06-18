@@ -144,4 +144,6 @@ class Pix2Pix(nn.Module):
 
     def forward(self, x):
         fake_depth = self.netG(x)
-        return fake_depth
+        D_fake_in = torch.cat((fake_depth.detach().cpu(), x), dim=1)
+        result = self.netD(D_fake_in)
+        return result
