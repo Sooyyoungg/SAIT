@@ -99,4 +99,18 @@ def train(model,
                 id = j
 
                 # png file
-                plt.imsave(os.pat
+                plt.imsave(os.path.join(result_dir, 'png', 'label_%04d.png' % id), t_label[j].squeeze(), cmap='gray')
+                plt.imsave(os.path.join(result_dir, 'png', 'input_%04d.png' % id), t_input[j].squeeze(), cmap='gray')
+                plt.imsave(os.path.join(result_dir, 'png', 'output_%04d.png' % id), t_output[j].squeeze(), cmap='gray')
+
+                # numpy type
+                np.save(os.path.join(result_dir, 'numpy', 'label_%04d.npy' % id), t_label[j].squeeze())
+                np.save(os.path.join(result_dir, 'numpy', 'input_%04d.npy' % id), t_input[j].squeeze())
+                np.save(os.path.join(result_dir, 'numpy', 'output_%04d.npy' % id), t_output[j].squeeze())
+
+    writer_train.close()
+
+        if epoch % 10 == 0:
+            save(ckpt_dir=ckpt_dir, net= model, optim=optim, epoch=epoch)
+    
+    return model
