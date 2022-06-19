@@ -2,6 +2,7 @@
 
 import torch
 from torch.nn import MSELoss, L1Loss
+from torch.utils.tensorboard import SummaryWriter
 
 def train(model,
           dataloader,
@@ -12,7 +13,9 @@ def train(model,
           earlystop=True,
           patience=10,
           device="cuda:3",
-          verbose=True
+          verbose=True,
+          ckpt_dir = ckpt_dir,
+          result_dir = result_dir
           ):
     index = 0 #iteration number
     val_loss, best_val_loss = 0.0, 200.0
@@ -79,4 +82,21 @@ def train(model,
                         "iter [%d] : loss: %.5f | val_loss: %.5f"
                         % (index-1, loss.item(), val_loss.item())
                     )
-    return model
+
+            # tensorboard 저장하기
+            t_noisy = fn_tonumpy(noisy)
+            t_label = fn_tonumpy(label)
+            t_input = fn_tonumpy(fn_denorm(input, mean=0.5, std=0.5))
+            t_output = fn_tonumpy(fn_class(output))
+            writer_train.add_image('input', t_noisy, epoch, dataformats='NHWC')
+            writer_train.add_image('label', t_label, epoch, dataformats='NHWC')
+            writer_train.add_image('masked input', t_input, epoch, dataformats='NHWC')
+            writer_train.add_image('output', t_output, epoch, dataformats='NHWC')
+            writer_train.add_scalar('loss', np.mean(loss), epoch)
+
+            # 이미지 저장
+            for j in range(t_label.shape[0]):
+                id = j
+
+                # png file
+                plt.imsave(os.pat

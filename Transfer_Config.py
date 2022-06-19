@@ -15,5 +15,9 @@ class Transfer_Config:
     test_img_dir = '/scratch/connectome/conmaster/Pycharm_projects/SAIT/Pix2Pix/Tested_images'
     self_supervised_dir = '/scratch/connectome/conmaster/Pycharm_projects/SAIT/Self_log'
 
+
+    # checkpoint
+    ckpt_dir =  '/scratch/connectome/conmaster/Pycharm_projects/SAIT/transfer/log/'
+    result_dir = '/scratch/connectome/conmaster/Pycharm_projects/SAIT/transfer/result/'
     gpu_ids = [7]
     model_transfer = 1

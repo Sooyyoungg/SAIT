@@ -1,5 +1,8 @@
+import os
 import numpy as np
 import torch
+
+import torch.nn as nn
 import torch.nn.functional as F
 import collections
 
@@ -476,3 +479,10 @@ def axes_dict_datasize(axes, datasize):
 
 def structure_axes(axes):
     return {a: axes[a] for a in ("T", "Z", "Y", "X") if a in axes}
+
+def save(ckpt_dir, net, optim, epoch):
+    if not os.path.exists(ckpt_dir):
+        os.makedirs(ckpt_dir)
+
+    torch.save({'net': net.state_dict(), 'optim': optim.state_dict()},
+               './%s/model_epoch%d.pth' % (ckpt_dir, epoch))

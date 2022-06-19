@@ -63,7 +63,7 @@ for repeat in range(repeats):
     # training
     print("Training: model initialized with {} pretrained model".format)
     model = train(model, data_loader, loss, optimizer, n_epoch, \
-                      masker, earlystop=True, patience=10, device=device, verbose=True)
+                      masker, earlystop=True, patience=10, device=device, verbose=True,ckpt_dir=confing.ckpt_dir, result_dir=config.result_dir)
 
     output = model(noisy)
 
