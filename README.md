@@ -13,4 +13,4 @@ Wish we have good luck!
 <img width="433" alt="image" src="https://user-images.githubusercontent.com/43199011/174489804-2845bc0d-973d-471e-812b-564f947dd1e7.png">
 
 ### 2. Self-Supervised
-![image](https://user-images.githubusercontent.com/43199011/174490290-074585c4-8b39-4d11-96a4-e29a313b84dd.png)
+![image](https://user-images.githubusercontent.com/43199011/174490327-baaabeca-d9ec-4e29-9f93-2cadca0aeaae.png)
