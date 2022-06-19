@@ -21,7 +21,7 @@ class Pix2Pix(nn.Module):
         # self.loss_names = ['G_GAN', 'G_l1', 'D_real', 'D_fake']
         # self.visual_names = ['input', 'fake_output', 'real_output']
 
-        self.netG = networks.define_G(self.config.input_nc, self.config.output_nc, self.config.ngf, self.config.netG, self.config.norm,
+        self.netG = networks.define_G(self.config.input_nc, self.config.output_nc, self.config.ngf, self.config.netG, self.config.initial, self.config.norm,
                                       not self.config.no_dropout, self.config.init_type, self.config.init_gain, self.config.gpu_ids)
         self.netD = networks.define_D(self.config.input_nc + self.config.output_nc, self.config.ndf, self.config.netD,
                                       self.config.n_layers_D, self.config.norm, self.config.init_type, self.config.init_gain, self.config.gpu_ids)

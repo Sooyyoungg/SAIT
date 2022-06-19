@@ -62,14 +62,6 @@ def main():
                 cv2.imwrite('{}/Train/{}_{}_fake_depth.png'.format(config.img_dir, epoch+1, i+1), f_image)
                 cv2.imwrite('{}/Train/{}_{}_real_depth.png'.format(config.img_dir, epoch+1, i+1), r_image)
 
-            # RMSE
-            # rmse = 0
-            # for b in range(config.batch_size):
-            #     f_image_r = ((fake_depth[b, 0, :, :].detach().cpu().numpy() + 1) / 2) * 255.0
-            #     r_image_r = ((real_depth[b, 0, :, :].detach().cpu().numpy() + 1) / 2) * 255.0
-            #     rmse += mean_squared_error(f_image_r, r_image_r)
-            # avg_rmse = (rmse / config.batch_size) ** 0.5
-
             # save & print loss values
             train_writer.add_scalar('Loss_G_RMSE', train_dict['G_RMSE_loss'], tot_itr)
             train_writer.add_scalar('Loss_G_GAN', train_dict['G_GAN_loss'], tot_itr)

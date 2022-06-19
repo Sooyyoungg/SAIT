@@ -485,4 +485,4 @@ def save(ckpt_dir, net, optim, epoch):
         os.makedirs(ckpt_dir)
 
     torch.save({'net': net.state_dict(), 'optim': optim.state_dict()},
-               './%s/model_epoch%d.pth' % (ckpt_dir, epoch))
+               '%s/model_epoch%d.pth' % (ckpt_dir, epoch))

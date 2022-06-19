@@ -10,14 +10,15 @@ class Transfer_Config:
     test_root = '/scratch/connectome/conmaster/Pycharm_projects/SAIT/Dataset/Test/'
 
     # output directory
-    log_dir = '/scratch/connectome/conmaster/Pycharm_projects/SAIT/Pix2Pix/log'
-    img_dir = '/scratch/connectome/conmaster/Pycharm_projects/SAIT/Pix2Pix/Generated_images'
+    log_dir = '/scratch/connectome/conmaster/Pycharm_projects/SAIT/Pix2Pix/log/2layers'
+    img_dir = '/scratch/connectome/conmaster/Pycharm_projects/SAIT/Pix2Pix/Generated_images/2layers'
     test_img_dir = '/scratch/connectome/conmaster/Pycharm_projects/SAIT/Pix2Pix/Tested_images'
     self_supervised_dir = '/scratch/connectome/conmaster/Pycharm_projects/SAIT/Self_log'
 
 
     # checkpoint
-    ckpt_dir =  '/scratch/connectome/conmaster/Pycharm_projects/SAIT/transfer/log/'
-    result_dir = '/scratch/connectome/conmaster/Pycharm_projects/SAIT/transfer/result/'
+    ckpt_dir = '/scratch/connectome/conmaster/Pycharm_projects/SAIT/Transfer/ckpt'
+    result_dir = '/scratch/connectome/conmaster/Pycharm_projects/SAIT/Transfer/result'
+    t_log_dir = '/scratch/connectome/conmaster/Pycharm_projects/SAIT/Transfer/log'
     gpu_ids = [7]
     model_transfer = 1

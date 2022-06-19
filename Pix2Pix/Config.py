@@ -4,13 +4,14 @@ class Config:
     train_list = '/scratch/connectome/conmaster/Pycharm_projects/SAIT/Dataset/train_list.csv'
     valid_list = '/scratch/connectome/conmaster/Pycharm_projects/SAIT/Dataset/val_list.csv'
     test_list = '/scratch/connectome/conmaster/Pycharm_projects/SAIT/Dataset/test_list.csv'
-    train_root = '/scratch/connectome/conmaster/Pycharm_projects/SAIT/Dataset/Train/'
-    valid_root = '/scratch/connectome/conmaster/Pycharm_projects/SAIT/Dataset/Validation/'
-    test_root = '/scratch/connectome/conmaster/Pycharm_projects/SAIT/Dataset/Test/'
+    train_root = '/scratch/connectome/conmaster/Pycharm_projects/SAIT/Dataset/Train'
+    valid_root = '/scratch/connectome/conmaster/Pycharm_projects/SAIT/Dataset/Validation'
+    test_root = '/scratch/connectome/conmaster/Pycharm_projects/SAIT/Dataset/Test'
 
     # output directory
     log_dir = '/scratch/connectome/conmaster/Pycharm_projects/SAIT/Pix2Pix/log/2layers'
     img_dir = '/scratch/connectome/conmaster/Pycharm_projects/SAIT/Pix2Pix/Generated_images/2layers'
+    valid_img_dir = '/scratch/connectome/conmaster/Pycharm_projects/SAIT/Pix2Pix/Best_Train_images'
     test_img_dir = '/scratch/connectome/conmaster/Pycharm_projects/SAIT/Pix2Pix/Tested_images'
 
     ## basic parameters
@@ -36,6 +37,7 @@ class Config:
     netG = 'unet_256'
     netD = 'basic'
     n_layers_D = 3
+    initial = True     # Initialize the Generator
     norm = 'instance'   # [instance | batch | none]
     init_type = 'normal' # [normal | xavier | kaiming | orthogonal]
     init_gain = 0.02    # scaling factor for normal, xavier and orthogonal

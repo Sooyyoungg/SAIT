@@ -5,6 +5,7 @@ from torch.optim import Adam
 # sys.path.append("")
 import torch
 import matplotlib.pyplot as plt
+import torchsummary
 
 from Noise2Self.util import show, plot_images, plot_tensors, psnr
 from Noise2Self.metric import frc, match_intensity, quantify, plot_quantifications
@@ -15,6 +16,7 @@ from Pix2Pix.Config import Config
 from Pix2Pix.DataSplit import DataSplit
 from Noise2Self.mask import Masker
 from nc_loader import nc_loader
+import copy as cp
 
 config = Transfer_Config()
 p2p_config = Config()
@@ -22,13 +24,13 @@ device = torch.device('cuda:' + str(config.gpu_ids[0]) if torch.cuda.is_availabl
 
 print("Training Start")
 batch_size = 16
-n_epoch = 100 ## epoch 값
+n_epoch = 10000 ## epoch 값
 repeats = 1
-learning_rate = 0.0001
-pretrained_name = 'SEM_best_epoch51_itr9945000.pt'
+learning_rate = 0.001
+pretrained_name = 'SEM_best_epoch88_itr17160000_rmse2.7991442392364716.pt'
 loss = 'mse' # [mse, mae]
 Data_eval = {}
-metrics_key = ['mse', 'ssmi', 'frc']
+metrics_key = ['mse', 'ssim', 'frc']
 
 ## Prepare for self-supervision training
 masker = Masker(width =4, mode='interpolate')
@@ -36,11 +38,11 @@ masker = Masker(width =4, mode='interpolate')
 ## if repeats
 
 for repeat in range(repeats):
-    print("No. {}".format(repeat))
+    print("Repeat No. {}".format(repeat))
 
     # data loader
     valid_data = DataSplit(data_list=config.valid_half_list, data_root=config.valid_root)
-    print(len(valid_data))
+    print("len(valid_data) : ",len(valid_data))
     data_loader = torch.utils.data.DataLoader(valid_data, batch_size=batch_size, shuffle=True,
                                                     num_workers=16, pin_memory=False)
 
@@ -50,11 +52,12 @@ for repeat in range(repeats):
     clean = torch.Tensor(clean)
 
     # model define
-    model = Pix2Pix.model.Pix2Pix(p2p_config)
+    model = cp.deepcopy(Pix2Pix.model.Pix2Pix(p2p_config))
 
     # transfer learning
     model.load_state_dict(torch.load(config.log_dir+'/'+pretrained_name)) # model directory
-    model = model.netG
+    model = cp.deepcopy(model.netG)
+    # torchsummary.summary(model, (1, 66, 45), device='cpu')
 
     # optimizer
     optimizer = Adam(model.parameters(), lr=learning_rate)
@@ -62,8 +65,9 @@ for repeat in range(repeats):
 
     # training
     print("Training: model initialized with {} pretrained model".format)
-    model = train(model, data_loader, loss, optimizer, n_epoch, \
-                      masker, earlystop=True, patience=10, device=device, verbose=True,ckpt_dir=confing.ckpt_dir, result_dir=config.result_dir)
+    model = train(model, data_loader, loss, optimizer, n_epoch,
+                  masker, earlystop=True, patience=10, device=device, verbose=True, ckpt_dir=config.ckpt_dir,
+                  result_dir=config.result_dir, log_dir=config.t_log_dir)
 
     output = model(noisy)
 
@@ -81,7 +85,7 @@ for repeat in range(repeats):
     for i in range(output.shape[0]):
         mse += mean_squared_error(output[i, 0, :, :], clean[i, 0, :, :]) ** 0.5
     rmse = mse / output.shape[0]
-    print(rmse)
+    print("RMSE: ", rmse)
 #
 #     if repeat == 0 and True:
 #         frc, spatial_freq = frc(output[0, 0, :], clean[0, 0, :])

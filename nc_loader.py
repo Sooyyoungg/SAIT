@@ -1,7 +1,7 @@
 import torch.nn as nn
 import pandas as pd
 import numpy as np
-import imageio
+from PIL import Image
 from torchvision import transforms
 
 class nc_loader(nn.Module):
@@ -14,12 +14,13 @@ class nc_loader(nn.Module):
 
         tot_sem = []
         tot_depth = []
+        # g_root = '/scratch/connectome/conmaster/Pycharm_projects/SAIT/Pix2Pix/Generated_images/2layers'
 
         for i in range(len(self.data_list)):
-            sem = imageio.imread(data_root+'/SEM/'+self.data_list.iloc[i, 0])
+            sem = Image.open(data_root+'/SEM/'+self.data_list.iloc[i, 0]).convert('L')
             sem = np.reshape(np.asarray(sem), (1, 66, 45))   # (66, 45)
             sub = self.data_list.iloc[i, 0].split('_itr')[0]
-            depth = np.reshape(np.asarray(imageio.imread(data_root+'/Depth/'+sub+'.png')), (1, 66, 45))   # (66, 45)
+            depth = np.reshape(np.asarray(Image.open(data_root+'/Depth/'+sub+'.png').convert('L')), (1, 66, 45))   # (66, 45)
             tot_sem.append(sem)
             tot_depth.append(depth)
 

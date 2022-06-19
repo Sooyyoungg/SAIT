@@ -67,7 +67,7 @@ def init_weights(net, init_type='normal', init_gain=0.02):
     print('initialize network with %s' % init_type)
     net.apply(init_func)
 
-def init_net(net, init_type='normal', init_gain=0.02, gpu_ids=[]):
+def init_net(net, init_type='normal', init_gain=0.02, gpu_ids=[], initial=True):
     if torch.cuda.is_available():
         if len(gpu_ids) > 0:
             # assert(torch.cuda.is_available())
@@ -75,10 +75,11 @@ def init_net(net, init_type='normal', init_gain=0.02, gpu_ids=[]):
             net = torch.nn.DataParallel(net, gpu_ids)
     else:
         net.to('cpu')
-    init_weights(net, init_type, init_gain=init_gain)
+    if initial:
+        init_weights(net, init_type, init_gain=init_gain)
     return net
 
-def define_G(input_nc, output_nc, ngf, netG, norm='batch', use_dropout=False, init_type='normal', init_gain=0.02, gpu_ids=[]):
+def define_G(input_nc, output_nc, ngf, netG, initial=True, norm='batch', use_dropout=False, init_type='normal', init_gain=0.02, gpu_ids=[]):
     norm_layer = get_norm_layer(norm_type=norm)
 
     if netG == 'unet_128':
@@ -87,8 +88,7 @@ def define_G(input_nc, output_nc, ngf, netG, norm='batch', use_dropout=False, in
         net = UnetGenerator(input_nc, output_nc, 8, ngf, norm_layer=norm_layer, use_dropout=use_dropout)
     else:
         raise NotImplementedError('Generator model name [%s] is not recognized' % netG)
-    return init_net(net, init_type, init_gain, gpu_ids)
-
+    return init_net(net, init_type, init_gain, gpu_ids, initial)
 
 def define_D(input_nc, ndf, netD, n_layers_D=3, norm='batch', init_type='normal', init_gain=0.02, gpu_ids=[]):
     norm_layer = get_norm_layer(norm_type=norm)
@@ -110,7 +110,7 @@ class UnetGenerator(nn.Module):
         # unet_block = UnetSkipConnectionBlock(ngf * 8, ngf * 16, input_nc=None, submodule=None, innermost=True, norm_layer=norm_layer)  # 512x8x5 -> 1024x4x2
         # unet_block = UnetSkipConnectionBlock(ngf * 8, ngf * 16, input_nc=None, submodule=None, innermost=True, norm_layer=norm_layer)   # 256x16x11 -> 512x8x5
         unet_block = UnetSkipConnectionBlock(ngf * 2, ngf * 8, input_nc=None, submodule=None, innermost=True, norm_layer=norm_layer)   # 128x33x22 -> 256x16x11
-        unet_block = UnetSkipConnectionBlock(ngf, ngf * 2, input_nc=None, submodule=unet_block, level=2, norm_layer=norm_layer)       # 64x66x45 -> 128x33x22
+        unet_block = UnetSkipConnectionBlock(ngf, ngf * 2, input_nc=None, submodule=unet_block, level=2, norm_layer=norm_layer)        # 64x66x45 -> 128x33x22
         self.model = UnetSkipConnectionBlock(output_nc, ngf, input_nc=input_nc, submodule=unet_block, outermost=True, norm_layer=norm_layer)  # 1x66x45 -> 64x66x45
 
     def forward(self, input):
@@ -218,7 +218,7 @@ class NLayerDiscriminator(nn.Module):
 
         # output 1 channel prediction map
         sequence += [
-            nn.Conv2d(ndf * nf_mult, 1, kernel_size=3, stride=1, padding=padw)]
+            nn.Conv2d(ndf * nf_mult, 1, kernel_size=kw, stride=1, padding=padw)]
         self.model = nn.Sequential(*sequence)
 
     def forward(self, input):
