@@ -80,8 +80,11 @@ for repeat in range(repeats):
     mse = 0
     for i in range(output.shape[0]):
         mse += mean_squared_error(output[i, 0, :, :], clean[i, 0, :, :]) ** 0.5
+        mse_noisy += mean_squared_error(output[i, 0, :, :], noisy[i, 0, :, :]) ** 0.5
     rmse = mse / output.shape[0]
-    print(rmse)
+    rmse_noisy = mse_noisy / output.shape[0]
+    print("RMSE(network) : s",rmse)
+    print("RMSE(noisy) : ",rmse_noisy)
 #
 #     if repeat == 0 and True:
 #         frc, spatial_freq = frc(output[0, 0, :], clean[0, 0, :])
