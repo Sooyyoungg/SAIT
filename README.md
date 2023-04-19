@@ -1,6 +1,7 @@
 # SAIT
 
-designed by SooYoung & JoonWoo
+designed by SooYoung & JoonWoo <br>
+Notion: https://swimming-whale.notion.site/SAIT-fd9f56ce5ef345e5a24d2430b6716ae4
 
 Wish we have good luck!               
 
